@@ -50,16 +50,20 @@ const initialForm = {
 function SectionCard({ icon: Icon, title, subtitle, children }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-3 px-7 py-5 border-b border-gray-100 bg-gray-50/60">
+      <div className="flex items-center gap-3 px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/60">
         <div className="w-8 h-8 rounded-lg bg-pink-50 border border-pink-200 flex items-center justify-center flex-shrink-0">
           <Icon className="w-4 h-4 text-pink-500" />
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-800 leading-none">{title}</p>
-          {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
+          <p className="text-sm font-bold text-gray-800 leading-none">
+            {title}
+          </p>
+          {subtitle && (
+            <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
+          )}
         </div>
       </div>
-      <div className="p-8">{children}</div>
+      <div className="p-5 sm:p-6">{children}</div>
     </div>
   );
 }
@@ -72,16 +76,14 @@ function Field({ label, error, children }) {
         {label}
       </label>
       {children}
-      {error && (
-        <p className="text-xs text-red-500 font-semibold">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
     </div>
   );
 }
 
 // ─── Input style ──────────────────────────────────────────────────────────────
 const inp =
-  "w-full rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-pink-300 focus:ring-2 focus:ring-pink-100 pl-5 pr-4 py-5 text-sm text-gray-800 outline-none transition-all placeholder-gray-300";
+  "w-full rounded-lg border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-pink-300 focus:ring-2 focus:ring-pink-100 px-3.5 py-3 text-sm text-gray-800 outline-none transition-all placeholder-gray-300";
 
 // ─── Sortable Image ───────────────────────────────────────────────────────────
 function SortableImage({ id, img, index, removeImage, updateAlt }) {
@@ -134,12 +136,13 @@ function ProductPreview({ form, images }) {
   const profit = price > 0 && cost > 0 ? (price - cost).toFixed(2) : null;
   const mainImage = images[0]?.url ?? null;
 
-  const categoryLabel = {
-    sparkle: "✨ Sparkly",
-    long: "🎀 Long Ribbon",
-    classic: "🎗️ Classic",
-    seasonal: "🌸 Seasonal",
-  }[form.category] ?? null;
+  const categoryLabel =
+    {
+      sparkle: "✨ Sparkly",
+      long: "🎀 Long Ribbon",
+      classic: "🎗️ Classic",
+      seasonal: "🌸 Seasonal",
+    }[form.category] ?? null;
 
   return (
     <div className="flex flex-col gap-5 sticky top-6 w-full">
@@ -154,29 +157,44 @@ function ProductPreview({ form, images }) {
       {/* Product card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden w-full">
         {/* Hero image */}
-        <div className="relative bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 w-full" style={{ paddingBottom: "75%" }}>
+        <div
+          className="relative bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 w-full"
+          style={{ paddingBottom: "75%" }}
+        >
           <div className="absolute inset-0 flex items-center justify-center">
             {mainImage ? (
-              <img src={mainImage} alt="preview" className="w-full h-full object-cover" />
+              <img
+                src={mainImage}
+                alt="preview"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-16 h-16 rounded-2xl bg-white/70 border border-pink-100 flex items-center justify-center">
                   <ImagePlus className="w-7 h-7 text-pink-200" />
                 </div>
-                <p className="text-xs font-medium text-pink-300">No image yet</p>
+                <p className="text-xs font-medium text-pink-300">
+                  No image yet
+                </p>
               </div>
             )}
           </div>
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             {form.newArrival && (
-              <span className="bg-purple-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">🆕 NEW</span>
+              <span className="bg-purple-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                🆕 NEW
+              </span>
             )}
             {form.bestseller && (
-              <span className="bg-pink-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">🔥 BEST</span>
+              <span className="bg-pink-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                🔥 BEST
+              </span>
             )}
             {form.featured && (
-              <span className="bg-amber-400 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">⭐ FEATURED</span>
+              <span className="bg-amber-400 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                ⭐ FEATURED
+              </span>
             )}
           </div>
           {categoryLabel && (
@@ -191,10 +209,18 @@ function ProductPreview({ form, images }) {
         {/* Product info */}
         <div className="p-6">
           <h3 className="font-bold text-gray-900 text-lg leading-snug mb-1">
-            {form.name || <span className="text-gray-300 font-normal text-base">Product name…</span>}
+            {form.name || (
+              <span className="text-gray-300 font-normal text-base">
+                Product name…
+              </span>
+            )}
           </h3>
           <p className="text-3xl font-bold text-pink-500 mb-5">
-            {price > 0 ? `$${price.toFixed(2)}` : <span className="text-gray-200 text-xl font-normal">$0.00</span>}
+            {price > 0 ? (
+              `$${price.toFixed(2)}`
+            ) : (
+              <span className="text-gray-200 text-xl font-normal">$0.00</span>
+            )}
           </p>
 
           {/* Metrics grid */}
@@ -202,19 +228,29 @@ function ProductPreview({ form, images }) {
             <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
               <div className="flex items-center gap-1.5 mb-1">
                 <DollarSign className="w-3 h-3 text-gray-400" />
-                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Cost</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                  Cost
+                </p>
               </div>
               <p className="text-base font-bold text-orange-500">
-                {cost > 0 ? `$${cost.toFixed(2)}` : <span className="text-gray-300 font-normal text-sm">—</span>}
+                {cost > 0 ? (
+                  `$${cost.toFixed(2)}`
+                ) : (
+                  <span className="text-gray-300 font-normal text-sm">—</span>
+                )}
               </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
               <div className="flex items-center gap-1.5 mb-1">
                 <Percent className="w-3 h-3 text-gray-400" />
-                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Margin</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                  Margin
+                </p>
               </div>
-              <p className={`text-base font-bold ${margin !== null ? (parseFloat(margin) >= 50 ? "text-emerald-500" : "text-amber-500") : "text-gray-300"}`}>
+              <p
+                className={`text-base font-bold ${margin !== null ? (parseFloat(margin) >= 50 ? "text-emerald-500" : "text-amber-500") : "text-gray-300"}`}
+              >
                 {margin !== null ? `${margin}%` : "—"}
               </p>
             </div>
@@ -222,19 +258,29 @@ function ProductPreview({ form, images }) {
             <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="w-3 h-3 text-gray-400" />
-                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Profit</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                  Profit
+                </p>
               </div>
               <p className="text-base font-bold text-emerald-500">
-                {profit ? `$${profit}` : <span className="text-gray-300 font-normal text-sm">—</span>}
+                {profit ? (
+                  `$${profit}`
+                ) : (
+                  <span className="text-gray-300 font-normal text-sm">—</span>
+                )}
               </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
               <div className="flex items-center gap-1.5 mb-1">
                 <Package className="w-3 h-3 text-gray-400" />
-                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Stock</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                  Stock
+                </p>
               </div>
-              <p className={`text-base font-bold ${inventory > 5 ? "text-gray-800" : inventory > 0 ? "text-amber-500" : "text-gray-300"}`}>
+              <p
+                className={`text-base font-bold ${inventory > 5 ? "text-gray-800" : inventory > 0 ? "text-amber-500" : "text-gray-300"}`}
+              >
                 {inventory > 0 ? `${inventory} units` : "—"}
               </p>
             </div>
@@ -244,11 +290,18 @@ function ProductPreview({ form, images }) {
           {images.length > 1 && (
             <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
               {images.slice(0, 5).map((img, i) => (
-                <img key={i} src={img.url} alt="" className="w-10 h-10 object-cover rounded-lg border border-gray-200" />
+                <img
+                  key={i}
+                  src={img.url}
+                  alt=""
+                  className="w-10 h-10 object-cover rounded-lg border border-gray-200"
+                />
               ))}
               {images.length > 5 && (
                 <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
-                  <span className="text-xs font-bold text-gray-400">+{images.length - 5}</span>
+                  <span className="text-xs font-bold text-gray-400">
+                    +{images.length - 5}
+                  </span>
                 </div>
               )}
             </div>
@@ -303,7 +356,10 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -371,20 +427,33 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
 
   return (
     // ── TRUE 50/50 grid — neither column can steal space from the other ──
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
-
+    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.8fr)] gap-6 lg:gap-8 items-start">
       {/* ── LEFT: Form ─────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 min-w-0">
         {/* Product Info */}
-        <SectionCard icon={Layers} title="Product Info" subtitle="Name and category">
-          <div className="grid grid-cols-2 gap-6">
+        <SectionCard
+          icon={Layers}
+          title="Product Info"
+          subtitle="Name and category"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <Field label="Product Name" error={errors.name}>
-              <input type="text" name="name" value={form.name} onChange={handleChange}
-                className={inp} placeholder="e.g. Sparkle Princess Bow" />
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className={inp}
+                placeholder="e.g. Sparkle Princess Bow"
+              />
             </Field>
             <Field label="Category" error={errors.category}>
-              <select name="category" value={form.category} onChange={handleChange} className={inp}>
+              <select
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                className={inp}
+              >
                 <option value="">Select category…</option>
                 <option value="sparkle">✨ Sparkly</option>
                 <option value="long">🎀 Long Ribbon</option>
@@ -396,24 +465,52 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         </SectionCard>
 
         {/* Pricing */}
-        <SectionCard icon={DollarSign} title="Pricing & Inventory" subtitle="Price, cost, and stock">
-          <div className="grid grid-cols-3 gap-6">
+        <SectionCard
+          icon={DollarSign}
+          title="Pricing & Inventory"
+          subtitle="Price, cost, and stock"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <Field label="Sale Price ($)" error={errors.price}>
-              <input type="number" step="0.01" name="price" value={form.price}
-                onChange={handleChange} className={inp} placeholder="0.00" />
+              <input
+                type="number"
+                step="0.01"
+                name="price"
+                value={form.price}
+                onChange={handleChange}
+                className={inp}
+                placeholder="0.00"
+              />
             </Field>
             <Field label="Material Cost ($)" error={errors.materialCost}>
-              <input type="number" step="0.01" name="materialCost" value={form.materialCost}
-                onChange={handleChange} className={inp} placeholder="0.00" />
+              <input
+                type="number"
+                step="0.01"
+                name="materialCost"
+                value={form.materialCost}
+                onChange={handleChange}
+                className={inp}
+                placeholder="0.00"
+              />
             </Field>
             <Field label="Stock Qty" error={errors.inventory}>
-              <input type="number" name="inventory" value={form.inventory}
-                onChange={handleChange} className={inp} placeholder="0" />
+              <input
+                type="number"
+                name="inventory"
+                value={form.inventory}
+                onChange={handleChange}
+                className={inp}
+                placeholder="0"
+              />
             </Field>
           </div>
         </SectionCard>
 
-        <SectionCard icon={FileText} title="Descriptions" subtitle="Storefront copy and richer product detail">
+        <SectionCard
+          icon={FileText}
+          title="Descriptions"
+          subtitle="Storefront copy and richer product detail"
+        >
           <div className="grid grid-cols-1 gap-6">
             <Field label="Short Description">
               <textarea
@@ -438,7 +535,11 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
           </div>
         </SectionCard>
 
-        <SectionCard icon={Search} title="SEO" subtitle="Search title, description, and keywords for this product">
+        <SectionCard
+          icon={Search}
+          title="SEO"
+          subtitle="Search title, description, and keywords for this product"
+        >
           <div className="grid grid-cols-1 gap-6">
             <Field label="SEO Title">
               <input
@@ -474,12 +575,31 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         </SectionCard>
 
         {/* Tags */}
-        <SectionCard icon={Tag} title="Tags" subtitle="Highlight this product in the store">
+        <SectionCard
+          icon={Tag}
+          title="Tags"
+          subtitle="Highlight this product in the store"
+        >
           <div className="flex flex-col gap-3">
             {[
-              { name: "newArrival", label: "New Arrival", emoji: "🆕", desc: "Show as new in store" },
-              { name: "bestseller", label: "Bestseller", emoji: "🔥", desc: "Mark as top selling" },
-              { name: "featured", label: "Featured", emoji: "⭐", desc: "Highlight on homepage" },
+              {
+                name: "newArrival",
+                label: "New Arrival",
+                emoji: "🆕",
+                desc: "Show as new in store",
+              },
+              {
+                name: "bestseller",
+                label: "Bestseller",
+                emoji: "🔥",
+                desc: "Mark as top selling",
+              },
+              {
+                name: "featured",
+                label: "Featured",
+                emoji: "⭐",
+                desc: "Highlight on homepage",
+              },
             ].map(({ name, label, emoji, desc }) => (
               <label
                 key={name}
@@ -489,22 +609,44 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                     : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white"
                 }`}
               >
-                <input type="checkbox" name={name} checked={form[name]}
-                  onChange={handleChange} className="sr-only" />
-                <span className="text-xl w-7 text-center flex-shrink-0">{emoji}</span>
+                <input
+                  type="checkbox"
+                  name={name}
+                  checked={form[name]}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <span className="text-xl w-7 text-center flex-shrink-0">
+                  {emoji}
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold leading-none ${form[name] ? "text-pink-700" : "text-gray-700"}`}>
+                  <p
+                    className={`text-sm font-bold leading-none ${form[name] ? "text-pink-700" : "text-gray-700"}`}
+                  >
                     {label}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
                 </div>
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                  form[name] ? "bg-pink-500 border-pink-500" : "border-gray-300"
-                }`}>
+                <div
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    form[name]
+                      ? "bg-pink-500 border-pink-500"
+                      : "border-gray-300"
+                  }`}
+                >
                   {form[name] && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12">
-                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2"
-                        strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      viewBox="0 0 12 12"
+                    >
+                      <path
+                        d="M2 6l3 3 5-5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </div>
@@ -514,26 +656,43 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         </SectionCard>
 
         {/* Images */}
-        <SectionCard icon={ImagePlus} title="Product Images" subtitle="First image is the cover · drag to reorder">
+        <SectionCard
+          icon={ImagePlus}
+          title="Product Images"
+          subtitle="First image is the cover · drag to reorder"
+        >
           {/* Dropzone */}
           <div
             {...getRootProps()}
             className="rounded-xl border-2 border-dashed text-center cursor-pointer transition-all py-12 px-6"
-              style={{ backgroundColor: isDragActive ? "#fce7f3" : "#fdf2f8", borderColor: isDragActive ? "#f472b6" : "#f9a8d4" }}
+            style={{
+              backgroundColor: isDragActive ? "#fce7f3" : "#fdf2f8",
+              borderColor: isDragActive ? "#f472b6" : "#f9a8d4",
+            }}
           >
             <input {...getInputProps()} />
             <div className="flex flex-col items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                isDragActive ? "bg-pink-100" : "bg-white border border-gray-200"
-              }`}>
-                <ImagePlus className={`w-6 h-6 ${isDragActive ? "text-pink-500" : "text-gray-400"}`} />
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  isDragActive
+                    ? "bg-pink-100"
+                    : "bg-white border border-gray-200"
+                }`}
+              >
+                <ImagePlus
+                  className={`w-6 h-6 ${isDragActive ? "text-pink-500" : "text-gray-400"}`}
+                />
               </div>
               <div>
                 <p className="text-sm font-bold text-gray-700">
                   {isDragActive ? "Release to upload" : "Drop images here"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  or <span className="text-pink-500 font-semibold">click to browse</span> · JPG, PNG, WEBP
+                  or{" "}
+                  <span className="text-pink-500 font-semibold">
+                    click to browse
+                  </span>{" "}
+                  · JPG, PNG, WEBP
                 </p>
               </div>
             </div>
@@ -543,14 +702,28 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
           {images.length > 0 && (
             <div className="mt-5">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                {images.length} image{images.length !== 1 ? "s" : ""} · drag to reorder
+                {images.length} image{images.length !== 1 ? "s" : ""} · drag to
+                reorder
               </p>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={images.map((_, i) => `${i}`)} strategy={horizontalListSortingStrategy}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={images.map((_, i) => `${i}`)}
+                  strategy={horizontalListSortingStrategy}
+                >
                   <div className="flex gap-3 flex-wrap">
                     {images.map((img, i) => (
-                      <SortableImage key={i} id={`${i}`} img={img} index={i}
-                        removeImage={removeImage} updateAlt={updateAlt} />
+                      <SortableImage
+                        key={i}
+                        id={`${i}`}
+                        img={img}
+                        index={i}
+                        removeImage={removeImage}
+                        updateAlt={updateAlt}
+                      />
                     ))}
                   </div>
                 </SortableContext>
@@ -565,15 +738,18 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
           disabled={loading}
           className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold py-7 rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed text-xl tracking-widest uppercase"
         >
-          {loading ? "Saving…" : productToEdit ? "💾 Save Changes" : "🎀 Add Bow to Store"}
+          {loading
+            ? "Saving…"
+            : productToEdit
+              ? "💾 Save Changes"
+              : "🎀 Add Bow to Store"}
         </button>
       </form>
 
       {/* ── RIGHT: Live Preview ─────────────────────────────────────────── */}
-      <div>
+      <div className="min-w-0">
         <ProductPreview form={form} images={images} />
       </div>
-
     </div>
   );
 }

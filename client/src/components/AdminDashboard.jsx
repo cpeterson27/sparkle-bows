@@ -89,7 +89,7 @@ function Sidebar({ activeView, setActiveView, lowStockCount }) {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-500 to-amber-400 flex items-center justify-center text-xs font-bold text-slate-950 flex-shrink-0">
-            A
+              A
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate text-white">Admin</p>
@@ -149,7 +149,13 @@ function StatCard({
   );
 }
 
-function FinancePulseCard({ title, value, subtitle, tone = "slate", icon: Icon }) {
+function FinancePulseCard({
+  title,
+  value,
+  subtitle,
+  tone = "slate",
+  icon: Icon,
+}) {
   const tones = {
     slate: "border-slate-200 bg-white text-slate-950",
     emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
@@ -158,14 +164,18 @@ function FinancePulseCard({ title, value, subtitle, tone = "slate", icon: Icon }
   };
 
   return (
-    <div className={`rounded-2xl border p-5 shadow-sm ${tones[tone] || tones.slate}`}>
+    <div
+      className={`rounded-2xl border p-5 shadow-sm ${tones[tone] || tones.slate}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">
             {title}
           </p>
           <p className="mt-3 text-2xl font-semibold">{value}</p>
-          {subtitle ? <p className="mt-2 text-sm opacity-75">{subtitle}</p> : null}
+          {subtitle ? (
+            <p className="mt-2 text-sm opacity-75">{subtitle}</p>
+          ) : null}
         </div>
         {Icon ? (
           <div className="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -248,7 +258,9 @@ function downloadRowsAsCsv(rows, filename) {
 
   const csv = [
     headers.join(","),
-    ...rows.map((row) => headers.map((header) => escapeValue(row[header])).join(",")),
+    ...rows.map((row) =>
+      headers.map((header) => escapeValue(row[header])).join(","),
+    ),
   ].join("\n");
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -282,7 +294,13 @@ function SearchInput({ placeholder, value, onChange }) {
 
 // ─── Orders Table ─────────────────────────────────────────────────────────────
 
-function OrdersTable({ orders, loading, onUpdateStatus, onBuyShippoLabel, shippoLoadingId }) {
+function OrdersTable({
+  orders,
+  loading,
+  onUpdateStatus,
+  onBuyShippoLabel,
+  shippoLoadingId,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -444,7 +462,9 @@ function OrdersTable({ orders, loading, onUpdateStatus, onBuyShippoLabel, shippo
                         disabled={shippoLoadingId === order._id}
                         className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
                       >
-                        {shippoLoadingId === order._id ? "Buying label..." : "Buy Shippo Label"}
+                        {shippoLoadingId === order._id
+                          ? "Buying label..."
+                          : "Buy Shippo Label"}
                       </button>
                       {order.shippingLabelUrl ? (
                         <a
@@ -685,7 +705,10 @@ function ExpenseForm({ onSave, saving }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-2 xl:grid-cols-5">
+    <form
+      onSubmit={handleSubmit}
+      className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-2 xl:grid-cols-5"
+    >
       <label className="block">
         <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           Expense Type
@@ -822,8 +845,12 @@ function ExpenseTable({ expenses, loading, onDelete }) {
           <tbody className="divide-y divide-slate-100">
             {!expenses.length ? (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
-                  No expenses recorded yet. Start with shipping, supplies, and marketing.
+                <td
+                  colSpan={6}
+                  className="px-6 py-10 text-center text-slate-500"
+                >
+                  No expenses recorded yet. Start with shipping, supplies, and
+                  marketing.
                 </td>
               </tr>
             ) : (
@@ -1000,7 +1027,8 @@ export default function AdminDashboard({ user, onRefresh }) {
     } catch (err) {
       console.error("Failed to buy Shippo label:", err);
       window.alert(
-        err.response?.data?.error || "Could not buy a Shippo label for this order.",
+        err.response?.data?.error ||
+          "Could not buy a Shippo label for this order.",
       );
     } finally {
       setShippoLoadingId("");
@@ -1047,8 +1075,7 @@ export default function AdminDashboard({ user, onRefresh }) {
     : new Date().getFullYear();
   const currentMonthSnapshot = monthlyReport.find(
     (entry) =>
-      entry.month ===
-      new Date().toLocaleString("default", { month: "long" }),
+      entry.month === new Date().toLocaleString("default", { month: "long" }),
   );
 
   const handleExport = async (type) => {
@@ -1187,7 +1214,8 @@ export default function AdminDashboard({ user, onRefresh }) {
                           Reporting window
                         </p>
                         <p className="mt-1 text-sm text-slate-600">
-                          Filter analytics and exports by the date range you want to review.
+                          Filter analytics and exports by the date range you
+                          want to review.
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -1207,7 +1235,9 @@ export default function AdminDashboard({ user, onRefresh }) {
                           className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
                         >
                           <Download className="h-4 w-4" />
-                          {exporting === "products" ? "Exporting..." : "Products CSV"}
+                          {exporting === "products"
+                            ? "Exporting..."
+                            : "Products CSV"}
                         </button>
                         <button
                           type="button"
@@ -1216,7 +1246,9 @@ export default function AdminDashboard({ user, onRefresh }) {
                           className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:opacity-50"
                         >
                           <Download className="h-4 w-4" />
-                          {exporting === "monthly" ? "Exporting..." : "Monthly Report"}
+                          {exporting === "monthly"
+                            ? "Exporting..."
+                            : "Monthly Report"}
                         </button>
                       </div>
                     </div>
@@ -1256,271 +1288,277 @@ export default function AdminDashboard({ user, onRefresh }) {
                 </div>
               </div>
             </div>
-	          </div>
-	        </div>
+          </div>
+        </div>
 
-	        <div className="p-6 lg:p-8">
-
-        {/* Dashboard View */}
-        {activeView === "dashboard" && (
-          <div className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <StatCard
-                title="Total Revenue"
-                value={`$${analytics.totalRevenue?.toFixed(2) || "0.00"}`}
-                subtitle={`${analytics.totalOrders} orders`}
-                icon={DollarSign}
-                color="green"
-              />
-              <StatCard
-                title="Orders"
-                value={analytics.totalOrders}
-                subtitle={`Avg $${avgOrderValue.toFixed(2)}/order`}
-                icon={ShoppingBag}
-                color="blue"
-              />
-              <StatCard
-                title="Products"
-                value={totalBows}
-                subtitle={`${totalInventory} total stock`}
-                icon={Package}
-                color="purple"
-              />
-              <StatCard
-                title="Customers"
-                value={analytics.totalCustomers}
-                subtitle="Total registered"
-                icon={Users}
-                color="pink"
-              />
-            </div>
-
-            {/* Low Stock Alert */}
-            {lowStockCount > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-orange-800">Low Stock Alert</p>
-                  <p className="text-sm text-orange-700 mt-1">
-                    {lowStockCount} product{lowStockCount !== 1 ? "s" : ""}{" "}
-                    running low on inventory
-                  </p>
-                  <button
-                    onClick={() => setActiveView("products")}
-                    className="text-sm font-medium text-orange-800 underline mt-2 hover:text-orange-900"
-                  >
-                    View products →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
-              <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Owner Finance Snapshot
-                </p>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <FinancePulseCard
-                    title="Operating Profit"
-                    value={formatMoney(operatingProfit)}
-                    subtitle="Profit after material and recorded operating expenses."
-                    tone={operatingProfit >= 0 ? "emerald" : "rose"}
-                    icon={Wallet}
-                  />
-                  <FinancePulseCard
-                    title="Tax Reserve"
-                    value={formatMoney(taxReserve)}
-                    subtitle="Suggested 25% reserve from operating profit for tax planning."
-                    tone="amber"
-                    icon={Landmark}
-                  />
-                  <FinancePulseCard
-                    title="Sales Tax Collected"
-                    value={formatMoney(analytics.totalTaxCollected)}
-                    subtitle="Amount collected on orders and not yours to spend."
-                    tone="slate"
-                    icon={Receipt}
-                  />
-                  <FinancePulseCard
-                    title="Shipping Collected"
-                    value={formatMoney(analytics.totalShippingCollected)}
-                    subtitle="Customer shipping revenue collected through checkout."
-                    tone="slate"
-                    icon={Truck}
-                  />
-                </div>
+        <div className="p-6 lg:p-8">
+          {/* Dashboard View */}
+          {activeView === "dashboard" && (
+            <div className="space-y-6">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <StatCard
+                  title="Total Revenue"
+                  value={`$${analytics.totalRevenue?.toFixed(2) || "0.00"}`}
+                  subtitle={`${analytics.totalOrders} orders`}
+                  icon={DollarSign}
+                  color="green"
+                />
+                <StatCard
+                  title="Orders"
+                  value={analytics.totalOrders}
+                  subtitle={`Avg $${avgOrderValue.toFixed(2)}/order`}
+                  icon={ShoppingBag}
+                  color="blue"
+                />
+                <StatCard
+                  title="Products"
+                  value={totalBows}
+                  subtitle={`${totalInventory} total stock`}
+                  icon={Package}
+                  color="purple"
+                />
+                <StatCard
+                  title="Customers"
+                  value={analytics.totalCustomers}
+                  subtitle="Total registered"
+                  icon={Users}
+                  color="pink"
+                />
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
+              {/* Low Stock Alert */}
+              {lowStockCount > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      Cash Discipline
+                    <p className="font-medium text-orange-800">
+                      Low Stock Alert
                     </p>
-                    <h2 className="mt-2 text-lg font-semibold text-slate-950">
-                      What to watch this week
-                    </h2>
+                    <p className="text-sm text-orange-700 mt-1">
+                      {lowStockCount} product{lowStockCount !== 1 ? "s" : ""}{" "}
+                      running low on inventory
+                    </p>
+                    <button
+                      onClick={() => setActiveView("products")}
+                      className="text-sm font-medium text-orange-800 underline mt-2 hover:text-orange-900"
+                    >
+                      View products →
+                    </button>
                   </div>
-                  <Landmark className="h-5 w-5 text-slate-400" />
                 </div>
-                <div className="mt-5 space-y-4">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-medium text-slate-600">
-                      Recorded expenses
-                    </p>
-                    <p className="mt-1 text-2xl font-semibold text-slate-950">
-                      {formatMoney(analytics.totalExpenses)}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-sm font-medium text-slate-600">
-                      Stripe fees
-                    </p>
-                    <p className="mt-1 text-2xl font-semibold text-slate-950">
-                      {formatMoney(analytics.totalStripeFees)}
-                    </p>
-                  </div>
-                  <p className="text-sm leading-6 text-slate-600">
-                    Keep your tax reserve separate, record every supply and
-                    marketing expense, and review low-margin products before
-                    scaling ad spend.
-                  </p>
-                </div>
-              </div>
-            </div>
+              )}
 
-            {/* Recent Orders */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Orders
-                </h2>
-                <button
-                  onClick={() => setActiveView("orders")}
-                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                >
-                  View all <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-3">
-                {analytics.recentOrders?.slice(0, 5).map((order) => (
-                  <div
-                    key={order._id}
-                    className="rounded-lg bg-gray-50 p-3"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                        #{order._id?.slice(-8).toUpperCase()}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                        {order.customerName || "Unknown"} ·{" "}
-                        {order.items?.length || 0} items
-                        </p>
-                        {order.isGift ? (
-                          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
-                            Gift order
-                          </p>
-                        ) : null}
-                        {order.giftMessage ? (
-                          <p className="mt-2 max-w-sm text-xs leading-5 text-slate-600">
-                            Note: {order.giftMessage}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">
-                        ${order.total?.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-gray-500 capitalize">
-                        {order.status || "pending"}
-                        </p>
-                      </div>
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
+                <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    Owner Finance Snapshot
+                  </p>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <FinancePulseCard
+                      title="Operating Profit"
+                      value={formatMoney(operatingProfit)}
+                      subtitle="Profit after material and recorded operating expenses."
+                      tone={operatingProfit >= 0 ? "emerald" : "rose"}
+                      icon={Wallet}
+                    />
+                    <FinancePulseCard
+                      title="Tax Reserve"
+                      value={formatMoney(taxReserve)}
+                      subtitle="Suggested 25% reserve from operating profit for tax planning."
+                      tone="amber"
+                      icon={Landmark}
+                    />
+                    <FinancePulseCard
+                      title="Sales Tax Collected"
+                      value={formatMoney(analytics.totalTaxCollected)}
+                      subtitle="Amount collected on orders and not yours to spend."
+                      tone="slate"
+                      icon={Receipt}
+                    />
+                    <FinancePulseCard
+                      title="Shipping Collected"
+                      value={formatMoney(analytics.totalShippingCollected)}
+                      subtitle="Customer shipping revenue collected through checkout."
+                      tone="slate"
+                      icon={Truck}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Cash Discipline
+                      </p>
+                      <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                        What to watch this week
+                      </h2>
                     </div>
+                    <Landmark className="h-5 w-5 text-slate-400" />
                   </div>
-                )) || (
-                  <p className="text-gray-500 text-center py-4">
-                    No orders yet
-                  </p>
-                )}
+                  <div className="mt-5 space-y-4">
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-sm font-medium text-slate-600">
+                        Recorded expenses
+                      </p>
+                      <p className="mt-1 text-2xl font-semibold text-slate-950">
+                        {formatMoney(analytics.totalExpenses)}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-sm font-medium text-slate-600">
+                        Stripe fees
+                      </p>
+                      <p className="mt-1 text-2xl font-semibold text-slate-950">
+                        {formatMoney(analytics.totalStripeFees)}
+                      </p>
+                    </div>
+                    <p className="text-sm leading-6 text-slate-600">
+                      Keep your tax reserve separate, record every supply and
+                      marketing expense, and review low-margin products before
+                      scaling ad spend.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* Orders View */}
-        {activeView === "orders" && (
-          <OrdersTable
-            orders={analytics.recentOrders}
-            loading={analyticsLoading}
-            onUpdateStatus={handleOrderStatusUpdate}
-            onBuyShippoLabel={handleBuyShippoLabel}
-            shippoLoadingId={shippoLoadingId}
-          />
-        )}
-
-        {/* Products/Inventory View */}
-        {activeView === "products" && (
-          <div className="space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <p className="text-sm text-gray-500 font-medium">
-                  Total Products
-                </p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {totalBows}
-                </p>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <p className="text-sm text-gray-500 font-medium">Total Stock</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {totalInventory}
-                </p>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <p className="text-sm text-gray-500 font-medium">
-                  Low Stock Items
-                </p>
-                <p className="text-3xl font-bold text-orange-600 mt-2">
-                  {lowStockCount}
-                </p>
-              </div>
-            </div>
-
-            <ProductsInventory
-              bows={bows}
-              loading={loading}
-              onEdit={(bow) => {
-                setEditingBow(bow);
-                setActiveView("add-product");
-              }}
-              onDelete={setConfirmDeleteBow}
-            />
-          </div>
-        )}
-
-        {/* Add Product View - Full Width */}
-        {activeView === "add-product" && (
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {editingBow ? "Edit Product" : "Add New Product"}
-                </h2>
-                {editingBow && (
+              {/* Recent Orders */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Recent Orders
+                  </h2>
                   <button
-                    onClick={() => {
-                      setEditingBow(null);
-                      setActiveView("products");
-                    }}
+                    onClick={() => setActiveView("orders")}
                     className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
                   >
-                    ← Back to products
+                    View all <ChevronRight className="w-4 h-4" />
                   </button>
-                )}
+                </div>
+                <div className="space-y-3">
+                  {analytics.recentOrders?.slice(0, 5).map((order) => (
+                    <div key={order._id} className="rounded-lg bg-gray-50 p-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            #{order._id?.slice(-8).toUpperCase()}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {order.customerName || "Unknown"} ·{" "}
+                            {order.items?.length || 0} items
+                          </p>
+                          {order.isGift ? (
+                            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                              Gift order
+                            </p>
+                          ) : null}
+                          {order.giftMessage ? (
+                            <p className="mt-2 max-w-sm text-xs leading-5 text-slate-600">
+                              Note: {order.giftMessage}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-gray-900">
+                            ${order.total?.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500 capitalize">
+                            {order.status || "pending"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">
+                      No orders yet
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Orders View */}
+          {activeView === "orders" && (
+            <OrdersTable
+              orders={analytics.recentOrders}
+              loading={analyticsLoading}
+              onUpdateStatus={handleOrderStatusUpdate}
+              onBuyShippoLabel={handleBuyShippoLabel}
+              shippoLoadingId={shippoLoadingId}
+            />
+          )}
+
+          {/* Products/Inventory View */}
+          {activeView === "products" && (
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <p className="text-sm text-gray-500 font-medium">
+                    Total Products
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                    {totalBows}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <p className="text-sm text-gray-500 font-medium">
+                    Total Stock
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                    {totalInventory}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <p className="text-sm text-gray-500 font-medium">
+                    Low Stock Items
+                  </p>
+                  <p className="text-3xl font-bold text-orange-600 mt-2">
+                    {lowStockCount}
+                  </p>
+                </div>
+              </div>
+
+              <ProductsInventory
+                bows={bows}
+                loading={loading}
+                onEdit={(bow) => {
+                  setEditingBow(bow);
+                  setActiveView("add-product");
+                }}
+                onDelete={setConfirmDeleteBow}
+              />
+            </div>
+          )}
+
+          {/* Add Product View - Full Width */}
+          {activeView === "add-product" && (
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-end justify-between gap-4 mb-8">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-500 mb-2">
+                    Catalog / Products
+                  </p>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+                    {editingBow ? "Edit Product" : "Add New Product"}
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Add the details, pricing, and imagery customers will see in
+                    your store.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingBow(null);
+                    setActiveView("products");
+                  }}
+                  className="shrink-0 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  ← Back to products
+                </button>
               </div>
               <AdminForm
                 productToEdit={editingBow}
@@ -1531,227 +1569,74 @@ export default function AdminDashboard({ user, onRefresh }) {
                 }}
               />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Analytics View */}
-        {activeView === "analytics" && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <StatCard
-                title="Total Revenue"
-                value={`$${analytics.totalRevenue?.toFixed(2) || "0.00"}`}
-                icon={DollarSign}
-                color="green"
-              />
-              <StatCard
-                title="Total Orders"
-                value={analytics.totalOrders}
-                icon={ShoppingBag}
-                color="blue"
-              />
-              <StatCard
-                title="Total Profit"
-                value={`$${analytics.totalProfit?.toFixed(2) || "0.00"}`}
-                icon={TrendingUp}
-                color="purple"
-              />
-              <StatCard
-                title="Customers"
-                value={analytics.totalCustomers}
-                icon={Users}
-                color="pink"
-              />
-            </div>
-
-            {!analyticsLoading && <AnalyticsCharts analytics={analytics} />}
-
-            <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Top customers
-                </p>
-                <div className="mt-5 space-y-3">
-                  {(analytics.topCustomers || []).slice(0, 5).map((customer) => (
-                    <div
-                      key={customer._id}
-                      className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-slate-950">
-                          {customer.name || customer._id || "Customer"}
-                        </p>
-                        <p className="text-xs text-slate-500">{customer._id}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-950">
-                          {formatMoney(customer.totalSpent)}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {customer.orderCount} orders
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  {!analytics.topCustomers?.length && (
-                    <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                      Top customer data will appear as orders build up.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  {currentReportYear} monthly snapshot
-                </p>
-                <div className="mt-5 space-y-3">
-                  {(monthlyReport || []).slice(0, 6).map((month) => (
-                    <div
-                      key={month.month}
-                      className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-slate-950">
-                          {month.month}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {month.orders} orders · {month.itemsSold} items
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-950">
-                          {formatMoney(month.revenue)}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Profit {formatMoney(month.profit)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeView === "site-settings" && (
-          <div className="mx-auto max-w-5xl space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
-                SEO and Analytics
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-                Site Settings
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-                Manage default meta tags, the brand information used in structured data, and your Google Analytics or Tag Manager IDs from one place.
-              </p>
-            </div>
-            <SiteSettingsForm />
-          </div>
-        )}
-
-        {activeView === "finance" && (
-          <div className="space-y-8">
-            <div className="grid gap-6 lg:grid-cols-4">
-              <FinancePulseCard
-                title="Recorded Expenses"
-                value={formatMoney(analytics.totalExpenses)}
-                subtitle="Everything logged through your finance center."
-                tone="slate"
-                icon={Receipt}
-              />
-              <FinancePulseCard
-                title="Stripe Fees"
-                value={formatMoney(analytics.totalStripeFees)}
-                subtitle="Payment processing costs affecting margin."
-                tone="rose"
-                icon={Wallet}
-              />
-              <FinancePulseCard
-                title="Operating Profit"
-                value={formatMoney(operatingProfit)}
-                subtitle="Revenue minus product cost and recorded expenses."
-                tone={operatingProfit >= 0 ? "emerald" : "rose"}
-                icon={PiggyBank}
-              />
-              <FinancePulseCard
-                title="Tax Reserve"
-                value={formatMoney(taxReserve)}
-                subtitle="Suggested cash to hold back for taxes."
-                tone="amber"
-                icon={Landmark}
-              />
-            </div>
-
-            <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-              <div className="space-y-6">
-                <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        Finance Center
-                      </p>
-                      <h2 className="mt-2 text-2xl font-semibold">
-                        Record the money leaving the business
-                      </h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                        Log supplies, marketing, software, shipping, and other
-                        costs so your dashboard reflects true operating profit.
-                      </p>
-                    </div>
-                    <CalendarDays className="h-6 w-6 text-slate-500" />
-                  </div>
-                </div>
-
-                <ExpenseForm onSave={handleExpenseSave} saving={savingExpense} />
-
-                <ExpenseTable
-                  expenses={filteredExpenses}
-                  loading={expensesLoading}
-                  onDelete={setExpenseToDelete}
+          {/* Analytics View */}
+          {activeView === "analytics" && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <StatCard
+                  title="Total Revenue"
+                  value={`$${analytics.totalRevenue?.toFixed(2) || "0.00"}`}
+                  icon={DollarSign}
+                  color="green"
+                />
+                <StatCard
+                  title="Total Orders"
+                  value={analytics.totalOrders}
+                  icon={ShoppingBag}
+                  color="blue"
+                />
+                <StatCard
+                  title="Total Profit"
+                  value={`$${analytics.totalProfit?.toFixed(2) || "0.00"}`}
+                  icon={TrendingUp}
+                  color="purple"
+                />
+                <StatCard
+                  title="Customers"
+                  value={analytics.totalCustomers}
+                  icon={Users}
+                  color="pink"
                 />
               </div>
 
-              <div className="space-y-6">
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Tax Prep Checklist
-                  </p>
-                  <div className="mt-5 space-y-4 text-sm leading-6 text-slate-600">
-                    <p>Separate collected sales tax from operating cash.</p>
-                    <p>Record every expense with a clear vendor and description.</p>
-                    <p>Review Stripe fees and shipping costs each month.</p>
-                    <p>Keep receipts for marketing, packaging, software, and supplies.</p>
-                    <p>Use the monthly reports endpoint later for accountant-ready exports.</p>
-                  </div>
-                </div>
+              {!analyticsLoading && <AnalyticsCharts analytics={analytics} />}
 
+              <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Expense Mix
+                    Top customers
                   </p>
                   <div className="mt-5 space-y-3">
-                    {Object.entries(analytics.expensesByType || {}).length ? (
-                      Object.entries(analytics.expensesByType || {}).map(
-                        ([type, amount]) => (
-                          <div
-                            key={type}
-                            className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
-                          >
-                            <span className="text-sm font-medium capitalize text-slate-700">
-                              {type.replace("_", " ")}
-                            </span>
-                            <span className="text-sm font-semibold text-slate-950">
-                              {formatMoney(amount)}
-                            </span>
+                    {(analytics.topCustomers || [])
+                      .slice(0, 5)
+                      .map((customer) => (
+                        <div
+                          key={customer._id}
+                          className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-950">
+                              {customer.name || customer._id || "Customer"}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {customer._id}
+                            </p>
                           </div>
-                        ),
-                      )
-                    ) : (
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-slate-950">
+                              {formatMoney(customer.totalSpent)}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {customer.orderCount} orders
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    {!analytics.topCustomers?.length && (
                       <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                        No manual expenses recorded yet.
+                        Top customer data will appear as orders build up.
                       </div>
                     )}
                   </div>
@@ -1759,35 +1644,206 @@ export default function AdminDashboard({ user, onRefresh }) {
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Current month focus
+                    {currentReportYear} monthly snapshot
                   </p>
-                  <div className="mt-5 space-y-4">
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <p className="text-sm font-medium text-slate-600">
-                        Revenue this month
-                      </p>
-                      <p className="mt-1 text-2xl font-semibold text-slate-950">
-                        {formatMoney(currentMonthSnapshot?.revenue)}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <p className="text-sm font-medium text-slate-600">
-                        Profit this month
-                      </p>
-                      <p className="mt-1 text-2xl font-semibold text-slate-950">
-                        {formatMoney(currentMonthSnapshot?.profit)}
-                      </p>
-                    </div>
-                    <p className="text-sm leading-6 text-slate-600">
-                      Use the reporting window above to review a season, a launch,
-                      or tax periods without losing visibility.
-                    </p>
+                  <div className="mt-5 space-y-3">
+                    {(monthlyReport || []).slice(0, 6).map((month) => (
+                      <div
+                        key={month.month}
+                        className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-slate-950">
+                            {month.month}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {month.orders} orders · {month.itemsSold} items
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-950">
+                            {formatMoney(month.revenue)}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Profit {formatMoney(month.profit)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {activeView === "site-settings" && (
+            <div className="mx-auto max-w-5xl space-y-6">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+                  SEO and Analytics
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+                  Site Settings
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                  Manage default meta tags, the brand information used in
+                  structured data, and your Google Analytics or Tag Manager IDs
+                  from one place.
+                </p>
+              </div>
+              <SiteSettingsForm />
+            </div>
+          )}
+
+          {activeView === "finance" && (
+            <div className="space-y-8">
+              <div className="grid gap-6 lg:grid-cols-4">
+                <FinancePulseCard
+                  title="Recorded Expenses"
+                  value={formatMoney(analytics.totalExpenses)}
+                  subtitle="Everything logged through your finance center."
+                  tone="slate"
+                  icon={Receipt}
+                />
+                <FinancePulseCard
+                  title="Stripe Fees"
+                  value={formatMoney(analytics.totalStripeFees)}
+                  subtitle="Payment processing costs affecting margin."
+                  tone="rose"
+                  icon={Wallet}
+                />
+                <FinancePulseCard
+                  title="Operating Profit"
+                  value={formatMoney(operatingProfit)}
+                  subtitle="Revenue minus product cost and recorded expenses."
+                  tone={operatingProfit >= 0 ? "emerald" : "rose"}
+                  icon={PiggyBank}
+                />
+                <FinancePulseCard
+                  title="Tax Reserve"
+                  value={formatMoney(taxReserve)}
+                  subtitle="Suggested cash to hold back for taxes."
+                  tone="amber"
+                  icon={Landmark}
+                />
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                <div className="space-y-6">
+                  <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                          Finance Center
+                        </p>
+                        <h2 className="mt-2 text-2xl font-semibold">
+                          Record the money leaving the business
+                        </h2>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                          Log supplies, marketing, software, shipping, and other
+                          costs so your dashboard reflects true operating
+                          profit.
+                        </p>
+                      </div>
+                      <CalendarDays className="h-6 w-6 text-slate-500" />
+                    </div>
+                  </div>
+
+                  <ExpenseForm
+                    onSave={handleExpenseSave}
+                    saving={savingExpense}
+                  />
+
+                  <ExpenseTable
+                    expenses={filteredExpenses}
+                    loading={expensesLoading}
+                    onDelete={setExpenseToDelete}
+                  />
+                </div>
+
+                <div className="space-y-6">
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Tax Prep Checklist
+                    </p>
+                    <div className="mt-5 space-y-4 text-sm leading-6 text-slate-600">
+                      <p>Separate collected sales tax from operating cash.</p>
+                      <p>
+                        Record every expense with a clear vendor and
+                        description.
+                      </p>
+                      <p>Review Stripe fees and shipping costs each month.</p>
+                      <p>
+                        Keep receipts for marketing, packaging, software, and
+                        supplies.
+                      </p>
+                      <p>
+                        Use the monthly reports endpoint later for
+                        accountant-ready exports.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Expense Mix
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      {Object.entries(analytics.expensesByType || {}).length ? (
+                        Object.entries(analytics.expensesByType || {}).map(
+                          ([type, amount]) => (
+                            <div
+                              key={type}
+                              className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                            >
+                              <span className="text-sm font-medium capitalize text-slate-700">
+                                {type.replace("_", " ")}
+                              </span>
+                              <span className="text-sm font-semibold text-slate-950">
+                                {formatMoney(amount)}
+                              </span>
+                            </div>
+                          ),
+                        )
+                      ) : (
+                        <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                          No manual expenses recorded yet.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Current month focus
+                    </p>
+                    <div className="mt-5 space-y-4">
+                      <div className="rounded-2xl bg-slate-50 p-4">
+                        <p className="text-sm font-medium text-slate-600">
+                          Revenue this month
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold text-slate-950">
+                          {formatMoney(currentMonthSnapshot?.revenue)}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-slate-50 p-4">
+                        <p className="text-sm font-medium text-slate-600">
+                          Profit this month
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold text-slate-950">
+                          {formatMoney(currentMonthSnapshot?.profit)}
+                        </p>
+                      </div>
+                      <p className="text-sm leading-6 text-slate-600">
+                        Use the reporting window above to review a season, a
+                        launch, or tax periods without losing visibility.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
