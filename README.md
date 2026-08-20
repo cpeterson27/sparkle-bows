@@ -283,6 +283,15 @@ Backend tests are in `server/tests/` and include auth, products, reviews, and St
 
 ## Deployment
 
+### Render deployment
+
+The repository includes [render.yaml](render.yaml) for the two-service Render setup:
+
+- Frontend static site: root directory `client`, build command `npm ci && npm run build`, publish directory `build`
+- Backend web service: root directory `server`, build command `npm ci`, start command `npm start`, health check `/api/health`
+
+Set backend secrets in the Render dashboard. The blueprint only defines non-secret production values and the public frontend/API URLs.
+
 ### Containerized backend
 
 This repository includes a root `Dockerfile` targeting the backend service. Basic flow:

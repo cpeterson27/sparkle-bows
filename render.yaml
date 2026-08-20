@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: sparkle-bows-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://www.sparklebows.shop
+      - key: FRONTEND_CUSTOM_DOMAIN
+        value: https://www.sparklebows.shop
+
+  - type: web
+    name: sparkle-bows-frontend
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://api.sparklebows.shop
