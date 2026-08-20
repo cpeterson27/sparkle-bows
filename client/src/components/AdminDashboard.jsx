@@ -1134,7 +1134,9 @@ export default function AdminDashboard({ user, onRefresh }) {
       <main className="flex-1 overflow-auto">
         {/* Header */}
         <div className="border-b border-slate-200 bg-white/80 backdrop-blur">
-          <div className="px-6 py-6 lg:px-8">
+          <div
+            className={`px-6 lg:px-8 ${activeView === "add-product" ? "py-4" : "py-6"}`}
+          >
             <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -1170,128 +1172,136 @@ export default function AdminDashboard({ user, onRefresh }) {
                 </p>
               </div>
 
-              <div className="space-y-3 xl:min-w-[420px]">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Revenue
-                    </p>
-                    <p className="mt-2 text-xl font-semibold text-slate-950">
-                      ${analytics.totalRevenue?.toFixed(2) || "0.00"}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Orders
-                    </p>
-                    <p className="mt-2 text-xl font-semibold text-slate-950">
-                      {analytics.totalOrders || 0}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Low Stock
-                    </p>
-                    <p className="mt-2 text-xl font-semibold text-amber-600">
-                      {lowStockCount}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Customers
-                    </p>
-                    <p className="mt-2 text-xl font-semibold text-slate-950">
-                      {analytics.totalCustomers || 0}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                          Reporting window
-                        </p>
-                        <p className="mt-1 text-sm text-slate-600">
-                          Filter analytics and exports by the date range you
-                          want to review.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleExport("sales")}
-                          disabled={exporting !== ""}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
-                        >
-                          <Download className="h-4 w-4" />
-                          {exporting === "sales" ? "Exporting..." : "Sales CSV"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleExport("products")}
-                          disabled={exporting !== ""}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
-                        >
-                          <Download className="h-4 w-4" />
-                          {exporting === "products"
-                            ? "Exporting..."
-                            : "Products CSV"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleExport("monthly")}
-                          disabled={exporting !== ""}
-                          className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:opacity-50"
-                        >
-                          <Download className="h-4 w-4" />
-                          {exporting === "monthly"
-                            ? "Exporting..."
-                            : "Monthly Report"}
-                        </button>
-                      </div>
+              {(activeView === "dashboard" || activeView === "analytics") && (
+                <div className="space-y-3 xl:min-w-[420px]">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Revenue
+                      </p>
+                      <p className="mt-2 text-xl font-semibold text-slate-950">
+                        ${analytics.totalRevenue?.toFixed(2) || "0.00"}
+                      </p>
                     </div>
-
-                    <div className="grid gap-3 md:grid-cols-[180px_1fr_1fr]">
-                      <select
-                        value={datePreset}
-                        onChange={(event) => setDatePreset(event.target.value)}
-                        className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
-                      >
-                        <option value="last30">Last 30 days</option>
-                        <option value="month">This month</option>
-                        <option value="quarter">This quarter</option>
-                        <option value="all">All time</option>
-                        <option value="custom">Custom range</option>
-                      </select>
-                      <input
-                        type="date"
-                        value={activeRange.start}
-                        onChange={(event) => {
-                          setDatePreset("custom");
-                          setCustomStart(event.target.value);
-                        }}
-                        className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
-                      />
-                      <input
-                        type="date"
-                        value={activeRange.end}
-                        onChange={(event) => {
-                          setDatePreset("custom");
-                          setCustomEnd(event.target.value);
-                        }}
-                        className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
-                      />
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Orders
+                      </p>
+                      <p className="mt-2 text-xl font-semibold text-slate-950">
+                        {analytics.totalOrders || 0}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Low Stock
+                      </p>
+                      <p className="mt-2 text-xl font-semibold text-amber-600">
+                        {lowStockCount}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Customers
+                      </p>
+                      <p className="mt-2 text-xl font-semibold text-slate-950">
+                        {analytics.totalCustomers || 0}
+                      </p>
                     </div>
                   </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            Reporting window
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            Filter analytics and exports by the date range you
+                            want to review.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleExport("sales")}
+                            disabled={exporting !== ""}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
+                          >
+                            <Download className="h-4 w-4" />
+                            {exporting === "sales"
+                              ? "Exporting..."
+                              : "Sales CSV"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleExport("products")}
+                            disabled={exporting !== ""}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
+                          >
+                            <Download className="h-4 w-4" />
+                            {exporting === "products"
+                              ? "Exporting..."
+                              : "Products CSV"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleExport("monthly")}
+                            disabled={exporting !== ""}
+                            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:opacity-50"
+                          >
+                            <Download className="h-4 w-4" />
+                            {exporting === "monthly"
+                              ? "Exporting..."
+                              : "Monthly Report"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-[180px_1fr_1fr]">
+                        <select
+                          value={datePreset}
+                          onChange={(event) =>
+                            setDatePreset(event.target.value)
+                          }
+                          className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
+                        >
+                          <option value="last30">Last 30 days</option>
+                          <option value="month">This month</option>
+                          <option value="quarter">This quarter</option>
+                          <option value="all">All time</option>
+                          <option value="custom">Custom range</option>
+                        </select>
+                        <input
+                          type="date"
+                          value={activeRange.start}
+                          onChange={(event) => {
+                            setDatePreset("custom");
+                            setCustomStart(event.target.value);
+                          }}
+                          className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
+                        />
+                        <input
+                          type="date"
+                          value={activeRange.end}
+                          onChange={(event) => {
+                            setDatePreset("custom");
+                            setCustomEnd(event.target.value);
+                          }}
+                          className="rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="p-6 lg:p-8">
+        <div
+          className={activeView === "add-product" ? "p-4 sm:p-6" : "p-6 lg:p-8"}
+        >
           {/* Dashboard View */}
           {activeView === "dashboard" && (
             <div className="space-y-6">
@@ -1536,26 +1546,14 @@ export default function AdminDashboard({ user, onRefresh }) {
 
           {/* Add Product View - Full Width */}
           {activeView === "add-product" && (
-            <div className="max-w-7xl mx-auto">
-              <div className="flex items-end justify-between gap-4 mb-8">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-500 mb-2">
-                    Catalog / Products
-                  </p>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-                    {editingBow ? "Edit Product" : "Add New Product"}
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Add the details, pricing, and imagery customers will see in
-                    your store.
-                  </p>
-                </div>
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-end mb-4">
                 <button
                   onClick={() => {
                     setEditingBow(null);
                     setActiveView("products");
                   }}
-                  className="shrink-0 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+                  className="shrink-0 text-sm font-semibold text-slate-500 hover:text-slate-950 transition-colors"
                 >
                   ← Back to products
                 </button>
