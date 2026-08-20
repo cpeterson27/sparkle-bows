@@ -42,10 +42,11 @@ export default function Header({
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-rose-100/80 bg-white/92 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 bg-slate-950 text-[11px] font-medium uppercase tracking-[0.22em] text-rose-100">
         <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-2 text-center sm:px-6 lg:px-8">
-          Handmade statement bows for milestones, gifting, and boutique-quality everyday wear
+          Handmade statement bows for milestones, gifting, and boutique-quality
+          everyday wear
         </div>
       </div>
 
@@ -55,11 +56,11 @@ export default function Header({
           onClick={() => navigate("/")}
           className="group flex items-center gap-4"
         >
-        <img
-        src="/favicon.ico"
-        alt="Sparkle Bows Logo"
-        className="h-11 w-11 rounded-2xl object-contain"
-      />
+          <img
+            src="/favicon.ico"
+            alt="Sparkle Bows Logo"
+            className="h-11 w-11 rounded-2xl object-contain"
+          />
           <div className="text-left">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
               Sparkle Bows
@@ -75,7 +76,9 @@ export default function Header({
             to="/"
             className={({ isActive }) =>
               `text-sm font-medium transition ${
-                isActive ? "text-slate-950" : "text-slate-600 hover:text-slate-950"
+                isActive
+                  ? "text-slate-950"
+                  : "text-slate-600 hover:text-slate-950"
               }`
             }
           >
@@ -86,7 +89,9 @@ export default function Header({
             to="/collections/sparkle"
             className={({ isActive }) =>
               `text-sm font-medium transition ${
-                isActive ? "text-slate-950" : "text-slate-600 hover:text-slate-950"
+                isActive
+                  ? "text-slate-950"
+                  : "text-slate-600 hover:text-slate-950"
               }`
             }
           >
