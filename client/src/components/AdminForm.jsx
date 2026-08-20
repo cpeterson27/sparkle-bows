@@ -708,98 +708,96 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                 ))}
               </div>
             </SectionCard>
+            {/* Images */}
+            <SectionCard
+              icon={ImagePlus}
+              title="Product Images"
+              subtitle="First image is the cover · drag to reorder"
+            >
+              {/* Dropzone */}
+              <div
+                {...getRootProps()}
+                className="rounded-xl border-2 border-dashed text-center cursor-pointer transition-all py-12 px-6"
+                style={{
+                  backgroundColor: isDragActive ? "#fce7f3" : "#fdf2f8",
+                  borderColor: isDragActive ? "#f472b6" : "#f9a8d4",
+                }}
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-3">
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                      isDragActive
+                        ? "bg-pink-100"
+                        : "bg-white border border-gray-200"
+                    }`}
+                  >
+                    <ImagePlus
+                      className={`w-6 h-6 ${isDragActive ? "text-pink-500" : "text-gray-400"}`}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-700">
+                      {isDragActive ? "Release to upload" : "Drop images here"}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      or{" "}
+                      <span className="text-pink-500 font-semibold">
+                        click to browse
+                      </span>{" "}
+                      · JPG, PNG, WEBP
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Uploaded thumbnails */}
+              {images.length > 0 && (
+                <div className="mt-5">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    {images.length} image{images.length !== 1 ? "s" : ""} · drag
+                    to reorder
+                  </p>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={images.map((_, i) => `${i}`)}
+                      strategy={horizontalListSortingStrategy}
+                    >
+                      <div className="flex gap-3 flex-wrap">
+                        {images.map((img, i) => (
+                          <SortableImage
+                            key={i}
+                            id={`${i}`}
+                            img={img}
+                            index={i}
+                            removeImage={removeImage}
+                            updateAlt={updateAlt}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              )}
+            </SectionCard>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading
+                ? "Saving…"
+                : productToEdit
+                  ? "Save Changes"
+                  : "Add Bow to Store"}
+            </button>
           </>
         )}
-
-        {/* Images */}
-        <SectionCard
-          icon={ImagePlus}
-          title="Product Images"
-          subtitle="First image is the cover · drag to reorder"
-        >
-          {/* Dropzone */}
-          <div
-            {...getRootProps()}
-            className="rounded-xl border-2 border-dashed text-center cursor-pointer transition-all py-12 px-6"
-            style={{
-              backgroundColor: isDragActive ? "#fce7f3" : "#fdf2f8",
-              borderColor: isDragActive ? "#f472b6" : "#f9a8d4",
-            }}
-          >
-            <input {...getInputProps()} />
-            <div className="flex flex-col items-center gap-3">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                  isDragActive
-                    ? "bg-pink-100"
-                    : "bg-white border border-gray-200"
-                }`}
-              >
-                <ImagePlus
-                  className={`w-6 h-6 ${isDragActive ? "text-pink-500" : "text-gray-400"}`}
-                />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-700">
-                  {isDragActive ? "Release to upload" : "Drop images here"}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  or{" "}
-                  <span className="text-pink-500 font-semibold">
-                    click to browse
-                  </span>{" "}
-                  · JPG, PNG, WEBP
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Uploaded thumbnails */}
-          {images.length > 0 && (
-            <div className="mt-5">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                {images.length} image{images.length !== 1 ? "s" : ""} · drag to
-                reorder
-              </p>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={images.map((_, i) => `${i}`)}
-                  strategy={horizontalListSortingStrategy}
-                >
-                  <div className="flex gap-3 flex-wrap">
-                    {images.map((img, i) => (
-                      <SortableImage
-                        key={i}
-                        id={`${i}`}
-                        img={img}
-                        index={i}
-                        removeImage={removeImage}
-                        updateAlt={updateAlt}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold py-7 rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed text-xl tracking-widest uppercase"
-        >
-          {loading
-            ? "Saving…"
-            : productToEdit
-              ? "💾 Save Changes"
-              : "🎀 Add Bow to Store"}
-        </button>
       </form>
 
       {/* ── RIGHT: Live Preview ─────────────────────────────────────────── */}
