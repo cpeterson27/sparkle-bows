@@ -318,6 +318,7 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (productToEdit) {
@@ -341,6 +342,7 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
       setForm(initialForm);
       setImages([]);
     }
+    setActiveTab("details");
   }, [productToEdit]);
 
   const validate = () => {
@@ -429,231 +431,285 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
     // ── TRUE 50/50 grid — neither column can steal space from the other ──
     <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.8fr)] gap-6 lg:gap-8 items-start">
       {/* ── LEFT: Form ─────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5 min-w-0">
-        {/* Product Info */}
-        <SectionCard
-          icon={Layers}
-          title="Product Info"
-          subtitle="Name and category"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <Field label="Product Name" error={errors.name}>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className={inp}
-                placeholder="e.g. Sparkle Princess Bow"
-              />
-            </Field>
-            <Field label="Category" error={errors.category}>
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                className={inp}
-              >
-                <option value="">Select category…</option>
-                <option value="sparkle">✨ Sparkly</option>
-                <option value="long">🎀 Long Ribbon</option>
-                <option value="classic">🎗️ Classic</option>
-                <option value="seasonal">🌸 Seasonal</option>
-              </select>
-            </Field>
-          </div>
-        </SectionCard>
-
-        {/* Pricing */}
-        <SectionCard
-          icon={DollarSign}
-          title="Pricing & Inventory"
-          subtitle="Price, cost, and stock"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <Field label="Sale Price ($)" error={errors.price}>
-              <input
-                type="number"
-                step="0.01"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-                className={inp}
-                placeholder="0.00"
-              />
-            </Field>
-            <Field label="Material Cost ($)" error={errors.materialCost}>
-              <input
-                type="number"
-                step="0.01"
-                name="materialCost"
-                value={form.materialCost}
-                onChange={handleChange}
-                className={inp}
-                placeholder="0.00"
-              />
-            </Field>
-            <Field label="Stock Qty" error={errors.inventory}>
-              <input
-                type="number"
-                name="inventory"
-                value={form.inventory}
-                onChange={handleChange}
-                className={inp}
-                placeholder="0"
-              />
-            </Field>
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          icon={FileText}
-          title="Descriptions"
-          subtitle="Storefront copy and richer product detail"
-        >
-          <div className="grid grid-cols-1 gap-6">
-            <Field label="Short Description">
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={4}
-                className={inp}
-                placeholder="A polished summary for product cards and the top of the product page."
-              />
-            </Field>
-            <Field label="Long Description">
-              <textarea
-                name="longDescription"
-                value={form.longDescription}
-                onChange={handleChange}
-                rows={6}
-                className={inp}
-                placeholder="Optional richer copy for craftsmanship, styling notes, gifting details, or materials."
-              />
-            </Field>
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          icon={Search}
-          title="SEO"
-          subtitle="Search title, description, and keywords for this product"
-        >
-          <div className="grid grid-cols-1 gap-6">
-            <Field label="SEO Title">
-              <input
-                type="text"
-                name="seoTitle"
-                value={form.seoTitle}
-                onChange={handleChange}
-                className={inp}
-                placeholder="Defaults to the product name if left blank"
-              />
-            </Field>
-            <Field label="SEO Description">
-              <textarea
-                name="seoDescription"
-                value={form.seoDescription}
-                onChange={handleChange}
-                rows={4}
-                className={inp}
-                placeholder="Defaults to the product description if left blank"
-              />
-            </Field>
-            <Field label="SEO Keywords">
-              <textarea
-                name="seoKeywords"
-                value={form.seoKeywords}
-                onChange={handleChange}
-                rows={3}
-                className={inp}
-                placeholder="Comma-separated keywords for this product"
-              />
-            </Field>
-          </div>
-        </SectionCard>
-
-        {/* Tags */}
-        <SectionCard
-          icon={Tag}
-          title="Tags"
-          subtitle="Highlight this product in the store"
-        >
-          <div className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 min-w-0">
+        <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+          <div
+            className="grid grid-cols-3 gap-1"
+            role="tablist"
+            aria-label="Product editor sections"
+          >
             {[
+              { id: "details", label: "Details", hint: "Basics & pricing" },
               {
-                name: "newArrival",
-                label: "New Arrival",
-                emoji: "🆕",
-                desc: "Show as new in store",
+                id: "storefront",
+                label: "Storefront",
+                hint: "Descriptions & SEO",
               },
               {
-                name: "bestseller",
-                label: "Bestseller",
-                emoji: "🔥",
-                desc: "Mark as top selling",
+                id: "media",
+                label: "Media & Tags",
+                hint: "Images & highlights",
               },
-              {
-                name: "featured",
-                label: "Featured",
-                emoji: "⭐",
-                desc: "Highlight on homepage",
-              },
-            ].map(({ name, label, emoji, desc }) => (
-              <label
-                key={name}
-                className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all select-none ${
-                  form[name]
-                    ? "border-pink-300 bg-pink-50"
-                    : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white"
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-xl px-3 py-3 text-left transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-slate-950 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
-                <input
-                  type="checkbox"
-                  name={name}
-                  checked={form[name]}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <span className="text-xl w-7 text-center flex-shrink-0">
-                  {emoji}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm font-bold leading-none ${form[name] ? "text-pink-700" : "text-gray-700"}`}
-                  >
-                    {label}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                    form[name]
-                      ? "bg-pink-500 border-pink-500"
-                      : "border-gray-300"
-                  }`}
+                <span className="block text-sm font-semibold">{tab.label}</span>
+                <span
+                  className={`mt-0.5 block text-[11px] ${activeTab === tab.id ? "text-slate-300" : "text-slate-400"}`}
                 >
-                  {form[name] && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      viewBox="0 0 12 12"
-                    >
-                      <path
-                        d="M2 6l3 3 5-5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </label>
+                  {tab.hint}
+                </span>
+              </button>
             ))}
           </div>
-        </SectionCard>
+        </div>
+
+        {activeTab === "details" && (
+          <>
+            {/* Product Info */}
+            <SectionCard
+              icon={Layers}
+              title="Product Info"
+              subtitle="Name and category"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <Field label="Product Name" error={errors.name}>
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className={inp}
+                    placeholder="e.g. Sparkle Princess Bow"
+                  />
+                </Field>
+                <Field label="Category" error={errors.category}>
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    className={inp}
+                  >
+                    <option value="">Select category…</option>
+                    <option value="sparkle">✨ Sparkly</option>
+                    <option value="long">🎀 Long Ribbon</option>
+                    <option value="classic">🎗️ Classic</option>
+                    <option value="seasonal">🌸 Seasonal</option>
+                  </select>
+                </Field>
+              </div>
+            </SectionCard>
+
+            {/* Pricing */}
+            <SectionCard
+              icon={DollarSign}
+              title="Pricing & Inventory"
+              subtitle="Price, cost, and stock"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <Field label="Sale Price ($)" error={errors.price}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="price"
+                    value={form.price}
+                    onChange={handleChange}
+                    className={inp}
+                    placeholder="0.00"
+                  />
+                </Field>
+                <Field label="Material Cost ($)" error={errors.materialCost}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="materialCost"
+                    value={form.materialCost}
+                    onChange={handleChange}
+                    className={inp}
+                    placeholder="0.00"
+                  />
+                </Field>
+                <Field label="Stock Qty" error={errors.inventory}>
+                  <input
+                    type="number"
+                    name="inventory"
+                    value={form.inventory}
+                    onChange={handleChange}
+                    className={inp}
+                    placeholder="0"
+                  />
+                </Field>
+              </div>
+            </SectionCard>
+          </>
+        )}
+
+        {activeTab === "storefront" && (
+          <>
+            <SectionCard
+              icon={FileText}
+              title="Descriptions"
+              subtitle="Storefront copy and richer product detail"
+            >
+              <div className="grid grid-cols-1 gap-6">
+                <Field label="Short Description">
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    rows={4}
+                    className={inp}
+                    placeholder="A polished summary for product cards and the top of the product page."
+                  />
+                </Field>
+                <Field label="Long Description">
+                  <textarea
+                    name="longDescription"
+                    value={form.longDescription}
+                    onChange={handleChange}
+                    rows={6}
+                    className={inp}
+                    placeholder="Optional richer copy for craftsmanship, styling notes, gifting details, or materials."
+                  />
+                </Field>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              icon={Search}
+              title="SEO"
+              subtitle="Search title, description, and keywords for this product"
+            >
+              <div className="grid grid-cols-1 gap-6">
+                <Field label="SEO Title">
+                  <input
+                    type="text"
+                    name="seoTitle"
+                    value={form.seoTitle}
+                    onChange={handleChange}
+                    className={inp}
+                    placeholder="Defaults to the product name if left blank"
+                  />
+                </Field>
+                <Field label="SEO Description">
+                  <textarea
+                    name="seoDescription"
+                    value={form.seoDescription}
+                    onChange={handleChange}
+                    rows={4}
+                    className={inp}
+                    placeholder="Defaults to the product description if left blank"
+                  />
+                </Field>
+                <Field label="SEO Keywords">
+                  <textarea
+                    name="seoKeywords"
+                    value={form.seoKeywords}
+                    onChange={handleChange}
+                    rows={3}
+                    className={inp}
+                    placeholder="Comma-separated keywords for this product"
+                  />
+                </Field>
+              </div>
+            </SectionCard>
+          </>
+        )}
+
+        {activeTab === "media" && (
+          <>
+            {/* Tags */}
+            <SectionCard
+              icon={Tag}
+              title="Tags"
+              subtitle="Highlight this product in the store"
+            >
+              <div className="flex flex-col gap-3">
+                {[
+                  {
+                    name: "newArrival",
+                    label: "New Arrival",
+                    emoji: "🆕",
+                    desc: "Show as new in store",
+                  },
+                  {
+                    name: "bestseller",
+                    label: "Bestseller",
+                    emoji: "🔥",
+                    desc: "Mark as top selling",
+                  },
+                  {
+                    name: "featured",
+                    label: "Featured",
+                    emoji: "⭐",
+                    desc: "Highlight on homepage",
+                  },
+                ].map(({ name, label, emoji, desc }) => (
+                  <label
+                    key={name}
+                    className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all select-none ${
+                      form[name]
+                        ? "border-pink-300 bg-pink-50"
+                        : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name={name}
+                      checked={form[name]}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <span className="text-xl w-7 text-center flex-shrink-0">
+                      {emoji}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-sm font-bold leading-none ${form[name] ? "text-pink-700" : "text-gray-700"}`}
+                      >
+                        {label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        form[name]
+                          ? "bg-pink-500 border-pink-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {form[name] && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          viewBox="0 0 12 12"
+                        >
+                          <path
+                            d="M2 6l3 3 5-5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </SectionCard>
+          </>
+        )}
 
         {/* Images */}
         <SectionCard
