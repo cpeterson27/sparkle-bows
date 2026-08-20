@@ -4,12 +4,124 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const User = require("../models/User");
 const Expense = require("../models/expenseModel");
+const Lead = require("../models/Lead");
 const { verifyToken, verifyAdmin } = require("../middleware/auth");
 
 const router = express.Router();
 
 // Protect all admin routes
 router.use(verifyToken, verifyAdmin);
+
+// ─── GET /api/admin/crm ──────────────────────────────────────────────────────
+router.get("/crm", async (req, res) => {
+  try {
+    const paidStatuses = ["processing", "shipped", "delivered"];
+    const [users, leads, orders] = await Promise.all([
+      User.find({ role: "user" })
+        .select("name email phone createdAt notificationPreferences")
+        .lean(),
+      Lead.find({})
+        .select(
+          "firstName email source vipSubscribed klaviyoStatus klaviyoSyncedAt createdAt",
+        )
+        .lean(),
+      Order.find({ status: { $in: paidStatuses } })
+        .select("customerName customerEmail total createdAt status")
+        .sort({ createdAt: -1 })
+        .lean(),
+    ]);
+
+    const customersByEmail = new Map();
+    const getCustomer = (email) => {
+      const normalizedEmail = String(email || "")
+        .toLowerCase()
+        .trim();
+      if (!normalizedEmail) return null;
+      if (!customersByEmail.has(normalizedEmail)) {
+        customersByEmail.set(normalizedEmail, {
+          email: normalizedEmail,
+          name: "",
+          phone: "",
+          source: "order",
+          createdAt: null,
+          orderCount: 0,
+          totalSpent: 0,
+          lastOrderAt: null,
+          vipSubscribed: false,
+          klaviyoStatus: "unknown",
+          klaviyoSyncedAt: null,
+        });
+      }
+      return customersByEmail.get(normalizedEmail);
+    };
+
+    users.forEach((user) => {
+      const customer = getCustomer(user.email);
+      if (!customer) return;
+      customer.name = user.name || customer.name;
+      customer.phone = user.phone || customer.phone;
+      customer.source = "account";
+      customer.createdAt = user.createdAt;
+    });
+
+    leads.forEach((lead) => {
+      const customer = getCustomer(lead.email);
+      if (!customer) return;
+      customer.name = lead.firstName || customer.name;
+      customer.source =
+        customer.source === "account" ? "account + VIP" : "VIP lead";
+      customer.vipSubscribed = Boolean(lead.vipSubscribed);
+      customer.klaviyoStatus = lead.klaviyoStatus || "unknown";
+      customer.klaviyoSyncedAt = lead.klaviyoSyncedAt || null;
+      customer.createdAt = customer.createdAt || lead.createdAt;
+    });
+
+    orders.forEach((order) => {
+      const customer = getCustomer(order.customerEmail);
+      if (!customer) return;
+      customer.name = customer.name || order.customerName || "";
+      customer.orderCount += 1;
+      customer.totalSpent += Number(order.total || 0);
+      if (
+        !customer.lastOrderAt ||
+        new Date(order.createdAt) > new Date(customer.lastOrderAt)
+      ) {
+        customer.lastOrderAt = order.createdAt;
+      }
+    });
+
+    const customers = [...customersByEmail.values()]
+      .map((customer) => ({
+        ...customer,
+        totalSpent: Number(customer.totalSpent.toFixed(2)),
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.lastOrderAt || b.createdAt || 0) -
+          new Date(a.lastOrderAt || a.createdAt || 0),
+      );
+
+    res.json({
+      customers,
+      summary: {
+        total: customers.length,
+        payingCustomers: customers.filter((customer) => customer.orderCount > 0)
+          .length,
+        vipLeads: customers.filter((customer) => customer.vipSubscribed).length,
+        klaviyoSynced: customers.filter(
+          (customer) => customer.klaviyoStatus === "synced",
+        ).length,
+        klaviyoFailed: customers.filter(
+          (customer) => customer.klaviyoStatus === "failed",
+        ).length,
+        klaviyoConfigured: Boolean(process.env.KLAVIYO_PRIVATE_KEY),
+      },
+    });
+  } catch (err) {
+    console.error("CRM data error:", err);
+    res.status(500).json({ error: "Could not load CRM data" });
+  }
+});
 
 // ─── GET /api/admin/analytics ─────────────────────────────────────────────────
 router.get("/analytics", async (req, res) => {
@@ -20,7 +132,7 @@ router.get("/analytics", async (req, res) => {
     if (start || end) {
       dateFilter.createdAt = {};
       if (start) dateFilter.createdAt.$gte = new Date(start);
-      if (end)   dateFilter.createdAt.$lte = new Date(end);
+      if (end) dateFilter.createdAt.$lte = new Date(end);
     }
 
     // ── Core metrics ──────────────────────────────────────────────────────────
@@ -67,9 +179,10 @@ router.get("/analytics", async (req, res) => {
     const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Unique customers by email
-    const totalCustomers = await Order.distinct("customerEmail", paidOrderFilter).then(
-      (arr) => arr.length
-    );
+    const totalCustomers = await Order.distinct(
+      "customerEmail",
+      paidOrderFilter,
+    ).then((arr) => arr.length);
 
     const expenseDateFilter = {};
     if (start || end) {
@@ -79,7 +192,10 @@ router.get("/analytics", async (req, res) => {
     }
 
     const expenses = await Expense.find(expenseDateFilter);
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalExpenses = expenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0,
+    );
     const expensesByType = expenses.reduce((acc, expense) => {
       acc[expense.type] = (acc[expense.type] || 0) + expense.amount;
       return acc;
@@ -90,7 +206,9 @@ router.get("/analytics", async (req, res) => {
       { $match: paidOrderFilter },
       { $group: { _id: "$customerEmail", orderCount: { $sum: 1 } } },
     ]);
-    const returningCustomers = customerOrderCounts.filter((c) => c.orderCount > 1).length;
+    const returningCustomers = customerOrderCounts.filter(
+      (c) => c.orderCount > 1,
+    ).length;
     const returningCustomerRate =
       customerOrderCounts.length > 0
         ? ((returningCustomers / customerOrderCounts.length) * 100).toFixed(1)
@@ -136,7 +254,9 @@ router.get("/analytics", async (req, res) => {
         $group: {
           _id: "$items.name",
           totalQuantity: { $sum: "$items.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } },
+          totalRevenue: {
+            $sum: { $multiply: ["$items.quantity", "$items.price"] },
+          },
         },
       },
       { $sort: { totalRevenue: -1 } },
@@ -151,9 +271,13 @@ router.get("/analytics", async (req, res) => {
           _id: "$items.productId",
           name: { $first: "$items.name" },
           totalUnitsSold: { $sum: "$items.quantity" },
-          totalRevenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } },
+          totalRevenue: {
+            $sum: { $multiply: ["$items.quantity", "$items.price"] },
+          },
           totalMaterialCost: {
-            $sum: { $multiply: ["$items.quantity", { $ifNull: ["$items.cost", 0] }] },
+            $sum: {
+              $multiply: ["$items.quantity", { $ifNull: ["$items.cost", 0] }],
+            },
           },
         },
       },
@@ -193,7 +317,12 @@ router.get("/analytics", async (req, res) => {
     recentOrders30Days.forEach((order) => {
       const dateKey = new Date(order.createdAt).toLocaleDateString();
       if (!salesByDayObj[dateKey]) {
-        salesByDayObj[dateKey] = { date: dateKey, revenue: 0, orders: 0, profit: 0 };
+        salesByDayObj[dateKey] = {
+          date: dateKey,
+          revenue: 0,
+          orders: 0,
+          profit: 0,
+        };
       }
       salesByDayObj[dateKey].revenue += order.total;
       salesByDayObj[dateKey].orders += 1;
@@ -201,12 +330,18 @@ router.get("/analytics", async (req, res) => {
     });
 
     const salesByDay = Object.values(salesByDayObj).sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
+      (a, b) => new Date(a.date) - new Date(b.date),
     );
 
     // ── Orders by day of week (helps with scheduling/inventory) ──────────────
     const ordersByDayOfWeek = [
-      "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
     ].map((day) => ({ day, orders: 0, revenue: 0 }));
 
     recentOrders30Days.forEach((order) => {
@@ -223,7 +358,20 @@ router.get("/analytics", async (req, res) => {
     }).populate("items.productId");
 
     const monthlyObj = {};
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     monthNames.forEach((m) => {
       monthlyObj[m] = { month: m, revenue: 0, profit: 0, orders: 0 };
     });
@@ -245,7 +393,8 @@ router.get("/analytics", async (req, res) => {
 
     // ── Totals ────────────────────────────────────────────────────────────────
     const totalMaterialCost = productProfitStats.reduce(
-      (sum, p) => sum + p.totalMaterialCost, 0
+      (sum, p) => sum + p.totalMaterialCost,
+      0,
     );
     const totalProfitResult = await Order.aggregate([
       { $match: paidOrderFilter },
@@ -253,12 +402,10 @@ router.get("/analytics", async (req, res) => {
     ]);
     const totalProfit = totalProfitResult[0]?.total || 0;
     const estimatedOperatingProfit = totalProfit - totalExpenses;
-    const taxReserveRecommendation = estimatedOperatingProfit > 0
-      ? estimatedOperatingProfit * 0.25
-      : 0;
-    const profitMargin = totalRevenue > 0
-      ? ((totalProfit / totalRevenue) * 100).toFixed(1)
-      : 0;
+    const taxReserveRecommendation =
+      estimatedOperatingProfit > 0 ? estimatedOperatingProfit * 0.25 : 0;
+    const profitMargin =
+      totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : 0;
 
     res.json({
       // Core
@@ -330,7 +477,7 @@ router.get("/export/sales", async (req, res) => {
     if (startDate || endDate) {
       query.createdAt = {};
       if (startDate) query.createdAt.$gte = new Date(startDate);
-      if (endDate)   query.createdAt.$lte = new Date(endDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
     }
     const orders = await Order.find(query)
       .populate("items.productId")
@@ -367,9 +514,10 @@ router.get("/export/products", async (req, res) => {
       Price: p.price.toFixed(2),
       MaterialCost: p.materialCost.toFixed(2),
       Profit: (p.price - p.materialCost).toFixed(2),
-      Margin: p.price > 0
-        ? (((p.price - p.materialCost) / p.price) * 100).toFixed(1) + "%"
-        : "0%",
+      Margin:
+        p.price > 0
+          ? (((p.price - p.materialCost) / p.price) * 100).toFixed(1) + "%"
+          : "0%",
       Inventory: p.inventory,
       TotalSales: p.sales || 0,
       TotalRevenue: (p.price * (p.sales || 0)).toFixed(2),
@@ -397,12 +545,22 @@ router.get("/reports/monthly", async (req, res) => {
 
     const monthlyData = {};
     for (let month = 0; month < 12; month++) {
-      const monthName = new Date(targetYear, month).toLocaleString("default", { month: "long" });
-      monthlyData[monthName] = { month: monthName, revenue: 0, profit: 0, orders: 0, itemsSold: 0 };
+      const monthName = new Date(targetYear, month).toLocaleString("default", {
+        month: "long",
+      });
+      monthlyData[monthName] = {
+        month: monthName,
+        revenue: 0,
+        profit: 0,
+        orders: 0,
+        itemsSold: 0,
+      };
     }
 
     orders.forEach((order) => {
-      const month = new Date(order.createdAt).toLocaleString("default", { month: "long" });
+      const month = new Date(order.createdAt).toLocaleString("default", {
+        month: "long",
+      });
       monthlyData[month].revenue += order.total;
       monthlyData[month].orders += 1;
       monthlyData[month].profit += Number(order.totalProfit || 0);

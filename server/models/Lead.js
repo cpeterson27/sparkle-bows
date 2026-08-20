@@ -23,6 +23,15 @@ const leadSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    klaviyoStatus: {
+      type: String,
+      enum: ["unknown", "pending", "synced", "failed"],
+      default: "unknown",
+    },
+    klaviyoSyncedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

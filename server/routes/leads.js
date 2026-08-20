@@ -155,6 +155,7 @@ router.post("/", async (req, res) => {
         firstName,
         source,
         vipSubscribed: true,
+        klaviyoStatus: KLAVIYO_PRIVATE_KEY ? "pending" : "unknown",
       });
     } else if (!lead.vipSubscribed) {
       lead.vipSubscribed = true;
@@ -187,6 +188,25 @@ router.post("/", async (req, res) => {
           listAddPromise,
           eventPromise,
         ]);
+
+        const klaviyoSynced =
+          Boolean(KLAVIYO_PRIVATE_KEY) &&
+          results[0].status === "fulfilled" &&
+          (results[0].value === true || wasVipSubscribed) &&
+          results[1].status === "fulfilled";
+        await Lead.updateOne(
+          { _id: lead._id },
+          {
+            $set: {
+              klaviyoStatus: !KLAVIYO_PRIVATE_KEY
+                ? "unknown"
+                : klaviyoSynced
+                  ? "synced"
+                  : "failed",
+              klaviyoSyncedAt: klaviyoSynced ? new Date() : null,
+            },
+          },
+        );
 
         if (results[0].status === "fulfilled" && results[0].value) {
           logger.info("Lead vipSubscribed confirmed", { email: lead.email });
@@ -377,7 +397,8 @@ router.get("/klaviyo-status", async (req, res) => {
 
     const listMembershipData = await listMembershipRes.json();
     const vipSubscribed =
-      listMembershipData?.data?.some((list) => list.id === KLAVIYO_LIST_ID) || false;
+      listMembershipData?.data?.some((list) => list.id === KLAVIYO_LIST_ID) ||
+      false;
 
     logger.info("Klaviyo status check", {
       email: normalizedEmail,

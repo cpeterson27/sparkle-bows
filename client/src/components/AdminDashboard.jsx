@@ -21,6 +21,8 @@ import {
   CalendarDays,
   Download,
   Globe,
+  Mail,
+  UserRound,
 } from "lucide-react";
 import AdminForm from "./AdminForm";
 import ConfirmModal from "./ConfirmModal";
@@ -34,6 +36,7 @@ function Sidebar({ activeView, setActiveView, lowStockCount }) {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "orders", label: "Orders", icon: ShoppingBag },
+    { id: "customers", label: "Customers & CRM", icon: Users },
     { id: "products", label: "Products", icon: Package },
     { id: "add-product", label: "Add Product", icon: PlusCircle },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
@@ -182,6 +185,225 @@ function FinancePulseCard({
             <Icon className="h-5 w-5" />
           </div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function CustomerCrmView({ data, loading }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+  const customers = data?.customers || [];
+  const summary = data?.summary || {};
+  const filteredCustomers = customers.filter((customer) => {
+    const query = searchTerm.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      [customer.name, customer.email, customer.phone].some((value) =>
+        value?.toLowerCase().includes(query),
+      );
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "vip" && customer.vipSubscribed) ||
+      (filter === "customers" && customer.orderCount > 0) ||
+      (filter === "repeat" && customer.orderCount > 1) ||
+      (filter === "klaviyo-failed" && customer.klaviyoStatus === "failed");
+    return matchesSearch && matchesFilter;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          {
+            label: "People in CRM",
+            value: summary.total || 0,
+            icon: Users,
+            tone: "text-slate-950",
+          },
+          {
+            label: "Paying customers",
+            value: summary.payingCustomers || 0,
+            icon: ShoppingBag,
+            tone: "text-emerald-600",
+          },
+          {
+            label: "VIP leads",
+            value: summary.vipLeads || 0,
+            icon: Mail,
+            tone: "text-rose-600",
+          },
+          {
+            label: "Klaviyo synced",
+            value: summary.klaviyoSynced || 0,
+            icon: UserRound,
+            tone: "text-violet-600",
+          },
+        ].map(({ label, value, icon: Icon, tone }) => (
+          <div
+            key={label}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                {label}
+              </p>
+              <Icon className={`h-5 w-5 ${tone}`} />
+            </div>
+            <p className={`mt-3 text-3xl font-semibold ${tone}`}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-200 p-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Customer relationship management
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-950">
+              Know who is behind the orders
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Orders, account customers, and VIP signups are unified by email.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search customers"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-rose-300 focus:bg-white sm:w-60"
+              />
+            </div>
+            <select
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-rose-300"
+            >
+              <option value="all">Everyone</option>
+              <option value="customers">Paying customers</option>
+              <option value="repeat">Repeat customers</option>
+              <option value="vip">VIP leads</option>
+              <option value="klaviyo-failed">Klaviyo needs attention</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-b border-slate-100 bg-slate-50/70 px-5 py-3 text-xs text-slate-500">
+          <span>
+            {summary.klaviyoConfigured
+              ? "Klaviyo connected"
+              : "Klaviyo key not configured"}
+          </span>
+          {summary.klaviyoFailed > 0 && (
+            <span className="font-semibold text-amber-700">
+              {summary.klaviyoFailed} sync issue
+              {summary.klaviyoFailed === 1 ? "" : "s"} need attention
+            </span>
+          )}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left">
+            <thead className="border-b border-slate-200 bg-white text-xs uppercase tracking-[0.14em] text-slate-500">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Customer</th>
+                <th className="px-5 py-3 font-semibold">Relationship</th>
+                <th className="px-5 py-3 font-semibold">Orders</th>
+                <th className="px-5 py-3 font-semibold">Spent</th>
+                <th className="px-5 py-3 font-semibold">Klaviyo</th>
+                <th className="px-5 py-3 font-semibold">Last activity</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-5 py-12 text-center text-sm text-slate-500"
+                  >
+                    Loading customer relationships...
+                  </td>
+                </tr>
+              ) : filteredCustomers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-5 py-12 text-center text-sm text-slate-500"
+                  >
+                    No matching customers yet.
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <tr key={customer.email} className="hover:bg-slate-50/70">
+                    <td className="px-5 py-4">
+                      <p className="font-semibold text-slate-950">
+                        {customer.name || "Guest shopper"}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {customer.email}
+                      </p>
+                      {customer.phone && (
+                        <p className="mt-1 text-xs text-slate-400">
+                          {customer.phone}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-wrap gap-1.5">
+                        {customer.orderCount > 0 && (
+                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                            Customer
+                          </span>
+                        )}
+                        {customer.orderCount > 1 && (
+                          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
+                            Repeat
+                          </span>
+                        )}
+                        {customer.vipSubscribed && (
+                          <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                            VIP
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm font-medium text-slate-700">
+                      {customer.orderCount}
+                    </td>
+                    <td className="px-5 py-4 text-sm font-semibold text-slate-950">
+                      {formatMoney(customer.totalSpent)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${customer.klaviyoStatus === "synced" ? "bg-violet-50 text-violet-700" : customer.klaviyoStatus === "failed" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500"}`}
+                      >
+                        {customer.klaviyoStatus === "synced"
+                          ? "Synced"
+                          : customer.klaviyoStatus === "failed"
+                            ? "Needs attention"
+                            : customer.vipSubscribed
+                              ? "Pending"
+                              : "Not a VIP lead"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-500">
+                      {customer.lastOrderAt
+                        ? new Date(customer.lastOrderAt).toLocaleDateString()
+                        : customer.createdAt
+                          ? new Date(customer.createdAt).toLocaleDateString()
+                          : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -925,6 +1147,8 @@ export default function AdminDashboard({ user, onRefresh }) {
   const [exporting, setExporting] = useState("");
   const [monthlyReport, setMonthlyReport] = useState([]);
   const [shippoLoadingId, setShippoLoadingId] = useState("");
+  const [crm, setCrm] = useState({ customers: [], summary: {} });
+  const [crmLoading, setCrmLoading] = useState(true);
 
   const fetchBows = useCallback(async () => {
     try {
@@ -984,12 +1208,25 @@ export default function AdminDashboard({ user, onRefresh }) {
     }
   }, [customEnd, customStart, datePreset]);
 
+  const fetchCrm = useCallback(async () => {
+    try {
+      setCrmLoading(true);
+      const res = await api.get("/api/admin/crm");
+      setCrm(res.data || { customers: [], summary: {} });
+    } catch (err) {
+      console.error("Error fetching CRM data:", err);
+    } finally {
+      setCrmLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchBows();
     fetchAnalytics();
     fetchExpenses();
     fetchMonthlyReport();
-  }, [fetchBows, fetchAnalytics, fetchExpenses, fetchMonthlyReport]);
+    fetchCrm();
+  }, [fetchBows, fetchAnalytics, fetchExpenses, fetchMonthlyReport, fetchCrm]);
 
   const totalBows = bows.length;
   const totalInventory = bows.reduce((sum, b) => sum + b.inventory, 0);
@@ -1145,6 +1382,7 @@ export default function AdminDashboard({ user, onRefresh }) {
                 <h1 className="mt-2 text-3xl font-semibold text-slate-950">
                   {activeView === "dashboard" && "Business Dashboard"}
                   {activeView === "orders" && "Order Management"}
+                  {activeView === "customers" && "Customers & CRM"}
                   {activeView === "products" && "Inventory Control"}
                   {activeView === "add-product" &&
                     (editingBow ? "Edit Product" : "Add Product")}
@@ -1157,6 +1395,8 @@ export default function AdminDashboard({ user, onRefresh }) {
                     "Track revenue, monitor inventory risk, and keep fulfillment moving without digging through raw data."}
                   {activeView === "orders" &&
                     "Review incoming orders, update fulfillment status, and stay on top of customer communication."}
+                  {activeView === "customers" &&
+                    "Understand your customers, follow VIP leads, and see how Klaviyo is supporting retention."}
                   {activeView === "products" &&
                     "Manage pricing, cost, margin, and stock so your catalog stays ready to sell."}
                   {activeView === "add-product" &&
@@ -1499,6 +1739,10 @@ export default function AdminDashboard({ user, onRefresh }) {
               onBuyShippoLabel={handleBuyShippoLabel}
               shippoLoadingId={shippoLoadingId}
             />
+          )}
+
+          {activeView === "customers" && (
+            <CustomerCrmView data={crm} loading={crmLoading} />
           )}
 
           {/* Products/Inventory View */}
