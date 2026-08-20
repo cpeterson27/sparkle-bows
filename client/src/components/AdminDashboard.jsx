@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -23,6 +24,7 @@ import {
   Globe,
   Mail,
   UserRound,
+  Home,
 } from "lucide-react";
 import AdminForm from "./AdminForm";
 import ConfirmModal from "./ConfirmModal";
@@ -33,6 +35,7 @@ import SiteSettingsForm from "./SiteSettingsForm";
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
 
 function Sidebar({ activeView, setActiveView, lowStockCount }) {
+  const navigate = useNavigate();
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "orders", label: "Orders", icon: ShoppingBag },
@@ -89,6 +92,14 @@ function Sidebar({ activeView, setActiveView, lowStockCount }) {
 
       {/* Footer */}
       <div className="p-4 border-t border-slate-800">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-100 transition hover:border-rose-300 hover:bg-rose-500/20"
+        >
+          <Home className="h-4 w-4" />
+          View storefront
+        </button>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-500 to-amber-400 flex items-center justify-center text-xs font-bold text-slate-950 flex-shrink-0">
