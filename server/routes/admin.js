@@ -123,6 +123,40 @@ router.get("/crm", async (req, res) => {
   }
 });
 
+// ─── GET /api/admin/klaviyo ───────────────────────────────────────────────────
+router.get("/klaviyo", async (req, res) => {
+  try {
+    const leads = await Lead.find({ vipSubscribed: true })
+      .select("firstName email source klaviyoStatus klaviyoSyncedAt createdAt")
+      .sort({ createdAt: -1 })
+      .limit(25)
+      .lean();
+
+    res.json({
+      configured: Boolean(process.env.KLAVIYO_PRIVATE_KEY),
+      listId: process.env.KLAVIYO_LIST_ID || "XShYDk",
+      recentActivity: leads.map((lead) => ({
+        name: lead.firstName || "Guest subscriber",
+        email: lead.email,
+        source: lead.source || "website",
+        status: lead.klaviyoStatus || "unknown",
+        timestamp: lead.klaviyoSyncedAt || lead.createdAt,
+      })),
+      counts: {
+        captured: leads.length,
+        synced: leads.filter((lead) => lead.klaviyoStatus === "synced").length,
+        failed: leads.filter((lead) => lead.klaviyoStatus === "failed").length,
+        unknown: leads.filter(
+          (lead) => !lead.klaviyoStatus || lead.klaviyoStatus === "unknown",
+        ).length,
+      },
+    });
+  } catch (err) {
+    console.error("Klaviyo admin data error:", err);
+    res.status(500).json({ error: "Could not load Klaviyo activity" });
+  }
+});
+
 // ─── GET /api/admin/analytics ─────────────────────────────────────────────────
 router.get("/analytics", async (req, res) => {
   try {

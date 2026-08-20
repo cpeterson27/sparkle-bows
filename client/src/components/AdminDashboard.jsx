@@ -387,7 +387,7 @@ function CustomerCrmView({ data, loading }) {
                           : customer.klaviyoStatus === "failed"
                             ? "Needs attention"
                             : customer.vipSubscribed
-                              ? "Pending"
+                              ? "Not verified"
                               : "Not a VIP lead"}
                       </span>
                     </td>
@@ -510,6 +510,93 @@ function SearchInput({ placeholder, value, onChange }) {
         onChange={onChange}
         className="flex-1 outline-none text-sm text-gray-700 placeholder-gray-400 bg-transparent"
       />
+    </div>
+  );
+}
+
+function OrderLifecycleBoard({ orders, loading, onUpdateStatus }) {
+  const statuses = ["pending", "processing", "shipped", "delivered"];
+  const [draggedOrder, setDraggedOrder] = useState(null);
+  const statusStyles = {
+    pending: "border-amber-200 bg-amber-50",
+    processing: "border-sky-200 bg-sky-50",
+    shipped: "border-violet-200 bg-violet-50",
+    delivered: "border-emerald-200 bg-emerald-50",
+  };
+
+  if (loading)
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">
+        Loading order lifecycle...
+      </div>
+    );
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-4">
+      {statuses.map((status) => {
+        const columnOrders = (orders || []).filter(
+          (order) => (order.status || "pending") === status,
+        );
+        return (
+          <div
+            key={status}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => {
+              if (draggedOrder && draggedOrder.status !== status) {
+                onUpdateStatus(draggedOrder._id, status);
+              }
+              setDraggedOrder(null);
+            }}
+            className={`min-h-[280px] rounded-2xl border p-3 ${statusStyles[status]}`}
+          >
+            <div className="flex items-center justify-between px-2 pb-3">
+              <h3 className="text-sm font-semibold capitalize text-slate-900">
+                {status}
+              </h3>
+              <span className="rounded-full bg-white/80 px-2 py-1 text-xs font-semibold text-slate-500">
+                {columnOrders.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {columnOrders.map((order) => (
+                <article
+                  key={order._id}
+                  draggable
+                  onDragStart={() => setDraggedOrder(order)}
+                  className="cursor-grab rounded-xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+                      #{order._id?.slice(-8).toUpperCase()}
+                    </p>
+                    <p className="text-sm font-semibold text-slate-950">
+                      {formatMoney(order.total)}
+                    </p>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-slate-900">
+                    {order.customerName || "Guest shopper"}
+                  </p>
+                  <p className="mt-1 truncate text-xs text-slate-500">
+                    {order.customerEmail}
+                  </p>
+                  <p className="mt-3 text-xs text-slate-400">
+                    {order.items?.length || 0} item
+                    {order.items?.length === 1 ? "" : "s"} ·{" "}
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleDateString()
+                      : "—"}
+                  </p>
+                </article>
+              ))}
+              {!columnOrders.length && (
+                <p className="px-2 py-8 text-center text-xs text-slate-500">
+                  Drop orders here
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1147,6 +1234,7 @@ export default function AdminDashboard({ user, onRefresh }) {
   const [exporting, setExporting] = useState("");
   const [monthlyReport, setMonthlyReport] = useState([]);
   const [shippoLoadingId, setShippoLoadingId] = useState("");
+  const [ordersLayout, setOrdersLayout] = useState("board");
   const [crm, setCrm] = useState({ customers: [], summary: {} });
   const [crmLoading, setCrmLoading] = useState(true);
 
@@ -1732,13 +1820,43 @@ export default function AdminDashboard({ user, onRefresh }) {
 
           {/* Orders View */}
           {activeView === "orders" && (
-            <OrdersTable
-              orders={analytics.recentOrders}
-              loading={analyticsLoading}
-              onUpdateStatus={handleOrderStatusUpdate}
-              onBuyShippoLabel={handleBuyShippoLabel}
-              shippoLoadingId={shippoLoadingId}
-            />
+            <div className="space-y-5">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-slate-500">
+                  Drag an order between stages to update its fulfillment status.
+                </p>
+                <div className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+                  {[
+                    ["board", "Lifecycle"],
+                    ["table", "Table"],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setOrdersLayout(value)}
+                      className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${ordersLayout === value ? "bg-slate-950 text-white" : "text-slate-500 hover:text-slate-900"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {ordersLayout === "board" ? (
+                <OrderLifecycleBoard
+                  orders={analytics.recentOrders}
+                  loading={analyticsLoading}
+                  onUpdateStatus={handleOrderStatusUpdate}
+                />
+              ) : (
+                <OrdersTable
+                  orders={analytics.recentOrders}
+                  loading={analyticsLoading}
+                  onUpdateStatus={handleOrderStatusUpdate}
+                  onBuyShippoLabel={handleBuyShippoLabel}
+                  shippoLoadingId={shippoLoadingId}
+                />
+              )}
+            </div>
           )}
 
           {activeView === "customers" && (
