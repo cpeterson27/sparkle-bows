@@ -52,7 +52,6 @@ export default function VipSignupSection({ user }) {
       });
 
       setSuccess(true);
-      setShowSection(false); // hide after signup
     } catch (err) {
       setError(
         err.response?.data?.error ||
