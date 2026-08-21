@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Confetti from "../components/Confetti";
 import Seo from "../components/Seo";
+import { fetchProductById } from "../api/products";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { trackViewItem } from "../lib/analytics";
 
@@ -39,10 +40,13 @@ export default function ProductPage({
   const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const { id } = useParams();
-  const product = useMemo(
+  const productFromList = useMemo(
     () => products.find((item) => item._id === id || item.id === id),
     [id, products],
   );
+  const [fetchedProduct, setFetchedProduct] = useState(null);
+  const [productLoading, setProductLoading] = useState(!productFromList);
+  const product = productFromList || fetchedProduct;
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -53,10 +57,50 @@ export default function ProductPage({
   const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
+    if (productFromList) {
+      setFetchedProduct(null);
+      setProductLoading(false);
+      return;
+    }
+
+    let active = true;
+    setProductLoading(true);
+    setFetchedProduct(null);
+
+    fetchProductById(id)
+      .then(({ data }) => {
+        if (active) setFetchedProduct(data);
+      })
+      .catch(() => {
+        if (active) setFetchedProduct(null);
+      })
+      .finally(() => {
+        if (active) setProductLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [id, productFromList]);
+
+  useEffect(() => {
     if (product?._id) {
       trackViewItem(product);
     }
   }, [product]);
+
+  if (productLoading && !product) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center bg-[#f7f3ee] px-4">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />
+          <p className="mt-4 text-sm font-medium text-slate-500">
+            Loading this bow...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
