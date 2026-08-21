@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import api, { injectAccessTokenGetter, injectAccessTokenSetter } from "../api/axios.config";
 import { fetchCurrentUser, updateCurrentUserProfile } from "../api/account";
 import { verifyTwoFactorLogin as verifyTwoFactorLoginRequest } from "../api/security";
@@ -15,26 +21,28 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const accessTokenRef = useRef(null);
 
-  // Inject both getter and setter so the axios interceptor can
-  // read and update the token automatically on 401s
-  useEffect(() => {
-    injectAccessTokenGetter(() => accessToken);
-  }, [accessToken]);
-
-  useEffect(() => {
-    injectAccessTokenSetter((newToken) => {
-      setAccessToken(newToken);
-    });
+  const updateAccessToken = useCallback((newToken) => {
+    accessTokenRef.current = newToken;
+    setAccessToken(newToken);
   }, []);
 
-  const setAuth = (userData, token) => {
+  // Inject both getter and setter so the axios interceptor can
+  // read and update the token synchronously. Using a ref prevents an
+  // authenticated request made immediately after login from seeing stale state.
+  useEffect(() => {
+    injectAccessTokenGetter(() => accessTokenRef.current);
+    injectAccessTokenSetter(updateAccessToken);
+  }, [updateAccessToken]);
+
+  const setAuth = useCallback((userData, token) => {
     setUser(userData);
-    setAccessToken(token);
+    updateAccessToken(token);
     if (userData) {
       markSessionActive();
     }
-  };
+  }, [updateAccessToken]);
 
   const applyAuthPayload = useCallback(
     (payload) => {
@@ -45,14 +53,14 @@ export const AuthProvider = ({ children }) => {
       setAuth(nextUser, nextToken);
       return nextUser;
     },
-    [accessToken],
+    [accessToken, setAuth],
   );
 
-  const clearAuth = () => {
+  const clearAuth = useCallback(() => {
     setUser(null);
-    setAccessToken(null);
+    updateAccessToken(null);
     clearSessionMarker();
-  };
+  }, [updateAccessToken]);
 
   const tryRefresh = useCallback(async () => {
     try {
@@ -71,7 +79,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [applyAuthPayload]);
+  }, [applyAuthPayload, clearAuth]);
 
   // On mount: skip tryRefresh if this is an OAuth redirect
   useEffect(() => {
