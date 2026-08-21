@@ -247,8 +247,10 @@ export default function App() {
             : p,
         ),
       );
+      return saved;
     } catch (err) {
       console.error(err);
+      throw err;
     }
   };
 

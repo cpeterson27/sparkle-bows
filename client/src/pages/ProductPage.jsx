@@ -55,6 +55,8 @@ export default function ProductPage({
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewError, setReviewError] = useState("");
 
   useEffect(() => {
     if (productFromList) {
@@ -149,20 +151,39 @@ export default function ProductPage({
     window.setTimeout(() => setShowConfetti(false), 1500);
   };
 
-  const handleSubmitReview = () => {
-    if (!reviewText.trim()) return;
+  const handleSubmitReview = async () => {
+    if (!reviewText.trim() || reviewSaving) return;
 
-    onAddReview(product._id, {
-      productId: product._id,
-      userName: user?.name || "Guest",
-      rating: reviewRating,
-      text: reviewText,
-      date: new Date().toISOString(),
-    });
+    setReviewSaving(true);
+    setReviewError("");
+    try {
+      const savedReview = await onAddReview(product._id, {
+        productId: product._id,
+        userName: user?.name || "Guest",
+        rating: reviewRating,
+        text: reviewText,
+        date: new Date().toISOString(),
+      });
 
-    setReviewText("");
-    setReviewRating(5);
-    setShowReviewForm(false);
+      if (fetchedProduct && savedReview) {
+        setFetchedProduct((current) =>
+          current
+            ? {
+                ...current,
+                reviews: [...(current.reviews || []), savedReview],
+              }
+            : current,
+        );
+      }
+
+      setReviewText("");
+      setReviewRating(5);
+      setShowReviewForm(false);
+    } catch {
+      setReviewError("Your review could not be published. Please try again.");
+    } finally {
+      setReviewSaving(false);
+    }
   };
 
   return (
@@ -451,12 +472,18 @@ export default function ProductPage({
                   placeholder="Tell future customers what made this bow feel worth it."
                   className="mt-4 min-h-32 w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-700 outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
                 />
+                {reviewError && (
+                  <p className="mt-3 text-sm font-medium text-red-600">
+                    {reviewError}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleSubmitReview}
-                  className="mt-4 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+                  disabled={reviewSaving || !reviewText.trim()}
+                  className="mt-4 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Publish review
+                  {reviewSaving ? "Publishing..." : "Publish review"}
                 </button>
               </div>
             )}
