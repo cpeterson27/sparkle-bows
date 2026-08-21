@@ -12,10 +12,13 @@ export default function VipSignupSection({ user }) {
   const [success, setSuccess] = useState(false);
   const [showSection, setShowSection] = useState(true); // show by default
   const [error, setError] = useState("");
+  const [email, setEmail] = useState(user?.email || "");
   const [formProtection] = useState(createFormProtectionState);
 
   useEffect(() => {
     if (!user?.email) return;
+
+    setEmail(user.email);
 
     const checkVip = async () => {
       try {
@@ -32,6 +35,12 @@ export default function VipSignupSection({ user }) {
   if (!showSection) return null; // hide only if confirmed VIP
 
   const handleVipClick = async () => {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setError("Enter your email address to join the VIP list.");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -39,8 +48,8 @@ export default function VipSignupSection({ user }) {
       await createLead(
         getProtectedFormPayload(
           {
-            email: user.email,
-            firstName: user.firstName || "",
+            email: normalizedEmail,
+            firstName: user?.firstName || user?.name || "",
             source: "homepage",
           },
           formProtection,
@@ -95,7 +104,21 @@ export default function VipSignupSection({ user }) {
               {error && (
                 <p className="mb-4 text-sm text-red-600 text-center">{error}</p>
               )}
+              <label htmlFor="vip-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="vip-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+                className="mb-4 w-full rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-950 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-2 focus:ring-rose-100"
+              />
               <button
+                type="button"
                 onClick={handleVipClick}
                 disabled={saving}
                 className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
