@@ -85,7 +85,10 @@ export default function SiteFooter({ onShowContact }) {
       </div>
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>Built to support boutique growth, bookkeeping discipline, and premium customer trust.</p>
+          <div className="space-y-1">
+            <p>Built to support boutique growth, bookkeeping discipline, and premium customer trust.</p>
+            <p>Sparkle Bows is owned and operated by CASSANDRA N PETERSON.</p>
+          </div>
           <p>Copyright {new Date().getFullYear()} Sparkle Bows</p>
         </div>
       </div>
