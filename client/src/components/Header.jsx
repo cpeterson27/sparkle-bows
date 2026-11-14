@@ -86,7 +86,31 @@ export default function Header({
           </NavLink>
           <NavButton onClick={scrollToShop}>Shop</NavButton>
           <NavLink
-            to="/collections/sparkle"
+            to="/collections/christmas"
+            className={({ isActive }) =>
+              `text-sm font-medium transition ${
+                isActive
+                  ? "text-rose-700"
+                  : "text-rose-600 hover:text-rose-700"
+              }`
+            }
+          >
+            Christmas
+          </NavLink>
+          <NavLink
+            to="/team-orders"
+            className={({ isActive }) =>
+              `text-sm font-medium transition ${
+                isActive
+                  ? "text-slate-950"
+                  : "text-slate-600 hover:text-slate-950"
+              }`
+            }
+          >
+            Team orders
+          </NavLink>
+          <NavLink
+            to="/collections/everyday"
             className={({ isActive }) =>
               `text-sm font-medium transition ${
                 isActive

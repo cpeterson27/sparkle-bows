@@ -12,6 +12,7 @@ import SiteFooter from "./components/SiteFooter";
 import HomePage from "./pages/HomePage";
 import ProductPage from "./pages/ProductPage";
 import CollectionPage from "./pages/CollectionPage";
+import TeamOrdersPage from "./pages/TeamOrdersPage";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage";
 import PolicyPage from "./pages/PolicyPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -341,6 +342,7 @@ export default function App() {
             }
           />
           <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+          <Route path="/team-orders" element={<TeamOrdersPage />} />
           <Route
             path="/collections/:slug"
             element={<CollectionPage products={products} addToCart={addToCart} />}

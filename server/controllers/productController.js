@@ -52,6 +52,13 @@ exports.addReview = async (req, res) => {
 };
 
 // CREATE a new product (admin only)
+// Only known occasions are kept (unknown values are dropped rather than failing the save).
+function cleanOccasions(value) {
+  if (value === undefined) return undefined;
+  const allowed = new Set(Product.OCCASIONS || []);
+  return [...new Set((Array.isArray(value) ? value : [value]).map(String))].filter((item) => allowed.has(item));
+}
+
 exports.createProduct = async (req, res) => {
   try {
     const {
@@ -69,6 +76,9 @@ exports.createProduct = async (req, res) => {
       featured,
       bestseller,
       newArrival,
+      occasions,
+      madeToOrderDays,
+      bundleEligible,
     } = req.body;
 
     // Price validation
@@ -90,9 +100,12 @@ exports.createProduct = async (req, res) => {
       seoKeywords,
       category,             // save category
       images,
-      inventory,
+      inventory: inventory ?? 0,
       materialCost,
       profitPerUnit,
+      occasions: cleanOccasions(occasions) ?? [],
+      madeToOrderDays: madeToOrderDays ?? 7,
+      bundleEligible: bundleEligible ?? true,
       featured: featured ?? false,
       bestseller: bestseller ?? false,
       newArrival: newArrival ?? false,
@@ -129,6 +142,9 @@ exports.updateProduct = async (req, res) => {
       featured,
       bestseller,
       newArrival,
+      occasions,
+      madeToOrderDays,
+      bundleEligible,
     } = req.body;
 
     // Price validation (if provided)
@@ -160,6 +176,9 @@ exports.updateProduct = async (req, res) => {
     product.images = images ?? product.images;
 
     product.inventory = inventory ?? product.inventory;
+    if (occasions !== undefined) product.occasions = cleanOccasions(occasions);
+    if (madeToOrderDays !== undefined) product.madeToOrderDays = madeToOrderDays;
+    if (bundleEligible !== undefined) product.bundleEligible = bundleEligible;
     product.materialCost = materialCost ?? product.materialCost;
     product.profitPerUnit =
       (product.price ?? 0) - (product.materialCost ?? 0);

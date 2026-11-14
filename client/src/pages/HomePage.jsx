@@ -14,6 +14,7 @@ import VipSignupSection from "../components/VipSignupSection";
 import Seo from "../components/Seo";
 import api from "../api/axios.config";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, OCCASIONS, holidayDeadline } from "../config/shop";
 
 function FadeIn({ children, delay = 0 }) {
   const ref = useRef(null);
@@ -51,26 +52,24 @@ function FadeIn({ children, delay = 0 }) {
   );
 }
 
-const STYLE_CARDS = [
+// Shop-by-occasion cards link to the occasion collections (see data/collections.js).
+const OCCASION_CARDS = [
   {
-    category: "sparkle",
-    label: "Sparkle bows",
-    description:
-      "Statement bows for birthdays, parties, and girls who love shine.",
-    palette: "from-rose-100 via-white to-amber-100",
+    slug: "christmas",
+    label: "Christmas bows",
+    description: "Red, green, plaid, and sparkle bows for Christmas photos, parties, and stockings.",
+    palette: "from-rose-100 via-white to-emerald-50",
   },
   {
-    category: "classic",
-    label: "Classic bows",
-    description:
-      "Timeless shapes for portraits, school days, and polished everyday wear.",
-    palette: "from-stone-100 via-white to-slate-100",
+    slug: "team-spirit",
+    label: "Team & school colors",
+    description: "Cheer, dance, and game-day bows made in your colors. Team pricing available.",
+    palette: "from-sky-50 via-white to-amber-100",
   },
   {
-    category: "long",
-    label: "Ribbon bows",
-    description:
-      "Long-tail silhouettes with soft movement and boutique presence.",
+    slug: "birthday",
+    label: "Birthday bows",
+    description: "Party-ready sparkle for the birthday girl, or a gift she'll wear all year.",
     palette: "from-amber-50 via-white to-rose-100",
   },
 ];
@@ -92,9 +91,10 @@ export default function HomePage({ addToCart }) {
 
   const categories = [
     { id: "all", label: "All bows" },
-    { id: "sparkle", label: "Sparkle" },
-    { id: "classic", label: "Classic" },
-    { id: "long", label: "Ribbon" },
+    { id: "christmas", label: "Christmas" },
+    { id: "team-spirit", label: "Team spirit" },
+    { id: "birthday", label: "Birthday" },
+    { id: "everyday", label: "Everyday" },
     { id: "bestseller", label: "Best sellers" },
     { id: "new", label: "New arrivals" },
   ];
@@ -103,6 +103,9 @@ export default function HomePage({ addToCart }) {
     if (selectedCategory === "all") return true;
     if (selectedCategory === "new") return product.newArrival;
     if (selectedCategory === "bestseller") return product.bestseller;
+    if (OCCASIONS.some((occasion) => occasion.id === selectedCategory)) {
+      return Array.isArray(product.occasions) && product.occasions.includes(selectedCategory);
+    }
     return product.category === selectedCategory;
   });
 
@@ -113,6 +116,8 @@ export default function HomePage({ addToCart }) {
     featuredProducts.length > 0
       ? featuredProducts
       : (allProducts || []).slice(0, 4);
+
+  const holiday = holidayDeadline();
 
   const scrollToShop = () =>
     document
@@ -142,6 +147,17 @@ export default function HomePage({ addToCart }) {
       `}</style>
 
       <div className="brand-sans">
+        {/* CHRISTMAS ORDER-BY BANNER */}
+        {holiday.open && (
+          <Link
+            to="/collections/christmas"
+            className="block bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-rose-700"
+          >
+            🎄 Order by {holiday.label} for Christmas delivery
+            {holiday.daysLeft <= 14 ? ` · only ${holiday.daysLeft} day${holiday.daysLeft === 1 ? "" : "s"} left` : ""} · Shop Christmas bows →
+          </Link>
+        )}
+
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-slate-200 bg-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.16),_transparent_26%)]" />
@@ -149,15 +165,15 @@ export default function HomePage({ addToCart }) {
             <FadeIn>
               <div className="max-w-2xl">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
-                  Premium handmade bow shop
+                  Handmade · made to order
                 </p>
                 <h1 className="brand-serif mt-6 text-5xl leading-tight text-slate-950 sm:text-6xl">
-                  Beautiful bows with the polish of a real boutique brand.
+                  Sparkly handmade bows, made just for her.
                 </h1>
                 <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
-                  Sparkle Bows is built to feel gift-worthy from first click to
-                  final delivery: refined product presentation, dependable
-                  quality, and a storefront ready to support serious growth.
+                  Every bow is made by hand when you order it, ready for photos,
+                  parties, and gifts. Any {BUNDLE.size} bows for ${BUNDLE.price}, and
+                  free U.S. shipping on orders over ${FREE_SHIPPING_THRESHOLD}.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-4">
                   <button
@@ -321,21 +337,17 @@ export default function HomePage({ addToCart }) {
           )}
         </section>
 
-        {/* STYLE CARDS */}
+        {/* SHOP BY OCCASION */}
         <section className="border-y border-slate-200 bg-white">
           <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8">
-            {STYLE_CARDS.map((item, index) => (
-              <FadeIn key={item.category} delay={index * 90}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCategory(item.category);
-                    scrollToShop();
-                  }}
-                  className={`w-full rounded-[34px] border border-slate-200 bg-gradient-to-br ${item.palette} p-8 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg`}
+            {OCCASION_CARDS.map((item, index) => (
+              <FadeIn key={item.slug} delay={index * 90}>
+                <Link
+                  to={`/collections/${item.slug}`}
+                  className={`block w-full rounded-[34px] border border-slate-200 bg-gradient-to-br ${item.palette} p-8 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg`}
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                    Shop by style
+                    Shop by occasion
                   </p>
                   <h3 className="brand-serif mt-6 text-3xl text-slate-950">
                     {item.label}
@@ -344,12 +356,26 @@ export default function HomePage({ addToCart }) {
                     {item.description}
                   </p>
                   <div className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
-                    Browse style
+                    Shop now
                     <ArrowRight className="h-4 w-4" />
                   </div>
-                </button>
+                </Link>
               </FadeIn>
             ))}
+          </div>
+          <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+            <Link
+              to="/team-orders"
+              className="flex flex-col items-start justify-between gap-3 rounded-[28px] border border-slate-200 bg-slate-950 p-6 text-white sm:flex-row sm:items-center"
+            >
+              <span>
+                <span className="block text-lg font-semibold">Ordering for a team, class, or studio?</span>
+                <span className="block text-sm text-slate-300">10+ bows in your colors, with team pricing. Tell us what you need.</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950">
+                Request team pricing <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
           </div>
         </section>
 

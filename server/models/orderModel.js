@@ -42,6 +42,8 @@ const orderSchema = new mongoose.Schema(
 
     subtotal: { type: Number, required: true, min: 0 },
     shippingCost: { type: Number, default: 0, min: 0 },
+    // Savings from the "any N for $X" bundle deal; subtotal is already after it.
+    bundleDiscount: { type: Number, default: 0, min: 0 },
     actualShippingLabelCost: { type: Number, default: 0, min: 0 },
     actualShippingLabelCurrency: { type: String, default: "usd" },
     tax: { type: Number, default: 0, min: 0 },

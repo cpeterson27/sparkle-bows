@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Star } from "lucide-react";
 import Confetti from "./Confetti";
+import { madeToOrderLabel, styleLabel } from "../config/shop";
 
 function formatPrice(price) {
   return `$${Number(price || 0).toFixed(2)}`;
@@ -12,7 +13,6 @@ export function ProductCard({ product, onAddToCart }) {
   const [showConfetti, setShowConfetti] = useState(false);
 
   const firstImageUrl = product.images?.[0]?.url;
-  const isSoldOut = Number(product.inventory || 0) <= 0;
   const reviewCount = product.reviews?.length || 0;
   const averageRating = reviewCount
     ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
@@ -21,7 +21,7 @@ export function ProductCard({ product, onAddToCart }) {
   const handleQuickAdd = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!isSoldOut && onAddToCart) {
+    if (onAddToCart) {
       onAddToCart(product, 1);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
@@ -39,9 +39,7 @@ export function ProductCard({ product, onAddToCart }) {
           <img
             src={firstImageUrl || "https://placehold.co/800x900?text=Sparkle+Bows"}
             alt={product.name}
-            className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.04] ${
-              isSoldOut ? "grayscale-[0.4]" : ""
-            }`}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
           />
 
           <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
@@ -58,11 +56,11 @@ export function ProductCard({ product, onAddToCart }) {
               )}
             </div>
             <span className="rounded-full bg-slate-950/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur">
-              {isSoldOut ? "Sold Out" : `${product.inventory || 0} in stock`}
+              Made to order
             </span>
           </div>
 
-          {!isSoldOut && (
+          {(
             <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transition duration-300 group-hover:opacity-100">
               <button
                 type="button"
@@ -79,7 +77,7 @@ export function ProductCard({ product, onAddToCart }) {
         <div className="flex flex-1 flex-col p-5">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-              {product.category || "Signature bow"}
+              {styleLabel(product.category)}
             </p>
             {reviewCount > 0 && (
               <div className="inline-flex items-center gap-1 text-xs text-slate-500">
@@ -110,6 +108,7 @@ export function ProductCard({ product, onAddToCart }) {
               View details
             </span>
           </div>
+          <p className="mt-3 text-xs font-medium text-slate-500">{madeToOrderLabel(product)}</p>
         </div>
       </article>
     </>

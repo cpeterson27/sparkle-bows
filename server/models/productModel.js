@@ -18,8 +18,21 @@ const CATEGORIES = [
   "sparkle",
   "long",
   "classic",
+  "cheer",
+  "pigtails",
+  "baby",
   "seasonal",
   "other",
+];
+
+// Shop-by-occasion collections; a bow can belong to several.
+const OCCASIONS = [
+  "christmas",
+  "valentines",
+  "back-to-school",
+  "birthday",
+  "everyday",
+  "team-spirit",
 ];
 
 const productSchema = new Schema({
@@ -38,7 +51,15 @@ const productSchema = new Schema({
     default: "other",
   },
 
-  inventory: { type: Number, default: 0, min: 0 },
+  occasions: { type: [{ type: String, enum: OCCASIONS }], default: [] },
+
+  // Every bow is made to order: it can always be bought and ships after it's made.
+  madeToOrderDays: { type: Number, default: 7, min: 1, max: 60 },
+  // Counts toward the "any N for $X" bundle deal (turn off for premium or custom bows).
+  bundleEligible: { type: Boolean, default: true },
+
+  // Kept for older records; made-to-order bows don't use stock counts.
+  inventory: { type: Number, default: 0 },
   materialCost: { type: Number, default: 0, min: 0 },
   profitPerUnit: { type: Number, default: 0 },
   sales: { type: Number, default: 0, min: 0 },
@@ -54,5 +75,6 @@ const productSchema = new Schema({
 
 // export the categories too if you want to reuse them frontend
 productSchema.statics.CATEGORIES = CATEGORIES;
+productSchema.statics.OCCASIONS = OCCASIONS;
 
 module.exports = mongoose.model("Product", productSchema);

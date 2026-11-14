@@ -134,7 +134,7 @@ describe("Stripe webhook route", () => {
     expect(updatedOrder.ownerNotified).toBe(true);
 
     const updatedProduct = await Product.findById(product._id);
-    expect(updatedProduct.inventory).toBe(3);
+    expect(updatedProduct.inventory).toBe(5); // made to order: stock isn't subtracted
     expect(updatedProduct.sales).toBe(2);
 
     const updatedCart = await Cart.findOne({ guestId: "guest_123" });

@@ -16,6 +16,7 @@ import Seo from "../components/Seo";
 import { fetchProductById } from "../api/products";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { trackViewItem } from "../lib/analytics";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, madeToOrderLabel } from "../config/shop";
 
 function formatPrice(price) {
   return `$${Number(price || 0).toFixed(2)}`;
@@ -141,11 +142,9 @@ export default function ProductPage({
     ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
       reviewCount
     : 0;
-  const inStock = Number(product.inventory || 0) > 0;
   const safetyWarning = product.safetyWarning || DEFAULT_SAFETY_WARNING;
 
   const handleAddToCart = () => {
-    if (!inStock) return;
     onAddToCart(product, quantity);
     setShowConfetti(true);
     window.setTimeout(() => setShowConfetti(false), 1500);
@@ -224,10 +223,7 @@ export default function ProductPage({
               `/product/${product._id}`,
               settings.siteUrl || window.location.origin,
             ).toString(),
-            availability:
-              inStock
-                ? "https://schema.org/InStock"
-                : "https://schema.org/OutOfStock",
+            availability: "https://schema.org/MadeToOrder",
           },
         }}
       />
@@ -353,9 +349,7 @@ export default function ProductPage({
                     Availability
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {inStock
-                      ? `${product.inventory} ready to ship`
-                      : "Currently sold out"}
+                    {madeToOrderLabel(product)}. Handmade just for you.
                   </p>
                 </div>
 
@@ -374,11 +368,10 @@ export default function ProductPage({
                     type="button"
                     onClick={() =>
                       setQuantity((current) =>
-                        Math.min(Number(product.inventory || 10), current + 1),
+                        Math.min(20, current + 1),
                       )
                     }
                     className="rounded-full p-3 text-slate-700 transition hover:bg-slate-100"
-                    disabled={!inStock}
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -388,12 +381,17 @@ export default function ProductPage({
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!inStock}
                 className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 <ShoppingBag className="h-5 w-5" />
-                {inStock ? `Add ${quantity} to cart` : "Sold out"}
+                {`Add ${quantity} to cart`}
               </button>
+
+              {product.bundleEligible !== false && (
+                <p className="mt-4 text-center text-sm font-medium text-rose-600">
+                  Any {BUNDLE.size} bows for ${BUNDLE.price} · free U.S. shipping over ${FREE_SHIPPING_THRESHOLD}
+                </p>
+              )}
 
               <div className="mt-5 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />

@@ -884,7 +884,7 @@ function ProductsInventory({ bows, loading, onEdit, onDelete }) {
                 Margin
               </th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                Stock
+                Ships in
               </th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
                 Status
@@ -911,8 +911,7 @@ function ProductsInventory({ bows, loading, onEdit, onDelete }) {
                         100
                       ).toFixed(1)
                     : "0.0";
-                const isLowStock = product.inventory <= 5;
-                const isOutOfStock = product.inventory === 0;
+                const occasionCount = Array.isArray(product.occasions) ? product.occasions.length : 0;
 
                 return (
                   <tr key={product._id} className="hover:bg-gray-50">
@@ -952,24 +951,18 @@ function ProductsInventory({ bows, loading, onEdit, onDelete }) {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`font-medium ${isOutOfStock ? "text-red-600" : isLowStock ? "text-orange-600" : "text-gray-900"}`}
-                      >
-                        {product.inventory}
+                      <span className="font-medium text-gray-900">
+                        {product.madeToOrderDays || 7} days
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {isOutOfStock ? (
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                          Out of Stock
-                        </span>
-                      ) : isLowStock ? (
+                      {occasionCount === 0 ? (
                         <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                          Low Stock
+                          No occasion
                         </span>
                       ) : (
                         <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                          In Stock
+                          Made to order
                         </span>
                       )}
                     </td>
@@ -1328,9 +1321,9 @@ export default function AdminDashboard({ user, onRefresh }) {
   }, [fetchBows, fetchAnalytics, fetchExpenses, fetchMonthlyReport, fetchCrm]);
 
   const totalBows = bows.length;
-  const totalInventory = bows.reduce((sum, b) => sum + b.inventory, 0);
-  const lowStockItems = bows.filter((b) => b.inventory <= 5);
-  const lowStockCount = lowStockItems.length;
+  // Made to order: no stock to track. Flag bows with no occasion, since they won't appear in occasion collections.
+  const totalSold = bows.reduce((sum, b) => sum + (b.sales || 0), 0);
+  const lowStockCount = bows.filter((b) => !Array.isArray(b.occasions) || b.occasions.length === 0).length;
 
   const handleDelete = async () => {
     if (!confirmDeleteBow) return;
@@ -1532,7 +1525,7 @@ export default function AdminDashboard({ user, onRefresh }) {
                     </div>
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Low Stock
+                        Missing occasion
                       </p>
                       <p className="mt-2 text-xl font-semibold text-amber-600">
                         {lowStockCount}
@@ -1663,7 +1656,7 @@ export default function AdminDashboard({ user, onRefresh }) {
                 <StatCard
                   title="Products"
                   value={totalBows}
-                  subtitle={`${totalInventory} total stock`}
+                  subtitle={`${totalSold} sold`}
                   icon={Package}
                   color="purple"
                 />
@@ -1682,11 +1675,11 @@ export default function AdminDashboard({ user, onRefresh }) {
                   <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium text-orange-800">
-                      Low Stock Alert
+                      Add an occasion
                     </p>
                     <p className="text-sm text-orange-700 mt-1">
-                      {lowStockCount} product{lowStockCount !== 1 ? "s" : ""}{" "}
-                      running low on inventory
+                      {lowStockCount} bow{lowStockCount !== 1 ? "s" : ""}{" "}
+                      {lowStockCount !== 1 ? "have" : "has"} no occasion, so {lowStockCount !== 1 ? "they don't" : "it doesn't"} show in Christmas, Birthday, and other collections
                     </p>
                     <button
                       onClick={() => setActiveView("products")}
@@ -1889,15 +1882,15 @@ export default function AdminDashboard({ user, onRefresh }) {
                 </div>
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   <p className="text-sm text-gray-500 font-medium">
-                    Total Stock
+                    Bows Sold
                   </p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">
-                    {totalInventory}
+                    {totalSold}
                   </p>
                 </div>
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   <p className="text-sm text-gray-500 font-medium">
-                    Low Stock Items
+                    Missing an occasion
                   </p>
                   <p className="text-3xl font-bold text-orange-600 mt-2">
                     {lowStockCount}

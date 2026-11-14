@@ -12,7 +12,8 @@ const STRIPE_TAX_PREVIEW_VERSION =
   process.env.STRIPE_TAX_PREVIEW_VERSION || "2025-09-30.preview";
 const DEFAULT_PRODUCT_TAX_CODE = process.env.STRIPE_DEFAULT_PRODUCT_TAX_CODE;
 const DEFAULT_SHIPPING_TAX_CODE = process.env.STRIPE_DEFAULT_SHIPPING_TAX_CODE;
-const FREE_SHIPPING_THRESHOLD = Number(process.env.FREE_SHIPPING_THRESHOLD || 50);
+const FREE_SHIPPING_THRESHOLD = Number(process.env.FREE_SHIPPING_THRESHOLD || 35);
+const { bundleDiscount, spreadDiscount, BUNDLE_SIZE, BUNDLE_PRICE } = require("../utils/bundlePricing");
 const SAFETY_WARNING =
   "WARNING: Contains small parts. Not intended for children under 3. Use with adult supervision. Remove before sleeping.";
 
@@ -179,11 +180,7 @@ async function buildOrderItemsFromCart(cart) {
       err.status = 400;
       throw err;
     }
-    if (product.inventory < item.quantity) {
-      const err = new Error(`Not enough stock for ${product.name}`);
-      err.status = 400;
-      throw err;
-    }
+    // Made to order: every bow can be ordered; there is no stock to run out of.
 
     subtotal += product.price * item.quantity;
     orderItems.push({
@@ -204,7 +201,17 @@ async function buildOrderItemsFromCart(cart) {
     });
   }
 
-  return { subtotal, orderItems, taxLineItems };
+  const discount = bundleDiscount(cart.items.map((item) => ({
+    price: orderItems.find((line) => String(line.productId) === String(item.productId?._id))?.price,
+    quantity: item.quantity,
+    bundleEligible: item.productId?.bundleEligible,
+  })));
+  return {
+    subtotal: Math.round((subtotal - discount) * 100) / 100,
+    bundleDiscount: discount,
+    orderItems,
+    taxLineItems: spreadDiscount(taxLineItems, toCents(discount)),
+  };
 }
 
 function buildQuoteOrder({
@@ -230,7 +237,7 @@ router.post("/shipping-rates", optionalAuth, async (req, res) => {
     }
 
     const { cart } = await loadCheckoutCart(req);
-    const { subtotal, orderItems } = await buildOrderItemsFromCart(cart);
+    const { subtotal, bundleDiscount: bundleSavings, orderItems } = await buildOrderItemsFromCart(cart);
     const quoteOrder = buildQuoteOrder({
       customerName,
       customerEmail,
@@ -247,8 +254,10 @@ router.post("/shipping-rates", optionalAuth, async (req, res) => {
       subtotal,
       freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
       freeShippingEligible: qualifiesForFreeShipping(subtotal, shippingInfo),
+      bundleDiscount: bundleSavings,
+      bundleOffer: { size: BUNDLE_SIZE, price: BUNDLE_PRICE },
       shippingPolicy:
-        "Free U.S. shipping on orders over $50. International shipping is calculated at checkout.",
+        `Free U.S. shipping on orders over $${FREE_SHIPPING_THRESHOLD}. International shipping is calculated at checkout.`,
       safetyWarning: SAFETY_WARNING,
       rates: customerRates,
     });
@@ -298,7 +307,7 @@ router.post("/create-payment-intent", optionalAuth, async (req, res) => {
     const { cart, userId, guestId } = await loadCheckoutCart(req);
 
     /* ------------------ VALIDATE INVENTORY ------------------ */
-    const { subtotal, orderItems, taxLineItems } = await buildOrderItemsFromCart(cart);
+    const { subtotal, bundleDiscount: bundleSavings, orderItems, taxLineItems } = await buildOrderItemsFromCart(cart);
 
     /* ------------------ SHIPPING ------------------ */
     const quoteOrder = buildQuoteOrder({
@@ -411,6 +420,7 @@ router.post("/create-payment-intent", optionalAuth, async (req, res) => {
       customerEmail,
       items: orderItems,
       subtotal,
+      bundleDiscount: bundleSavings,
       shippingCost,
       tax: taxAmount,
       total,
@@ -435,12 +445,13 @@ router.post("/create-payment-intent", optionalAuth, async (req, res) => {
       clientSecret: paymentIntent.client_secret,
       orderId: order._id,
       subtotal,
+      bundleDiscount: bundleSavings,
       shippingCost,
       shippingRate: selectedShippingRate,
       freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
       freeShippingEligible: selectedShippingRate.freeShipping,
       shippingPolicy:
-        "Free U.S. shipping on orders over $50. International shipping is calculated at checkout.",
+        `Free U.S. shipping on orders over $${FREE_SHIPPING_THRESHOLD}. International shipping is calculated at checkout.`,
       safetyWarning: SAFETY_WARNING,
       tax: taxAmount,
       total,

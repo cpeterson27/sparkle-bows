@@ -131,8 +131,8 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
           }
 
           await Product.findByIdAndUpdate(item.productId._id, {
+            // Made to order: count the sale; there is no stock to subtract.
             $inc: {
-              inventory: -item.quantity,
               sales: item.quantity,
             },
           });
