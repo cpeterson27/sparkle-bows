@@ -3,35 +3,34 @@ import { Link } from "react-router-dom";
 
 export default function SiteFooter({ onShowContact }) {
   return (
-    <footer className="border-t border-slate-200 bg-slate-950 text-slate-200">
+    <footer className="border-t border-royal-100 bg-royal-950 text-royal-100">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.25fr_0.9fr_0.9fr] lg:px-8">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-rose-300">
-            Sparkle Bows
-          </p>
-          <h2 className="mt-4 max-w-md font-serif text-3xl text-white">
-            A polished bow boutique built for thoughtful gifting and repeat customers.
-          </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-slate-400">
-            Premium presentation, dependable fulfillment, and handmade quality
-            that feels worthy of birthdays, holidays, photo days, and boutique
-            shelves.
+          <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="" className="h-14 w-14 rounded-2xl" />
+            <p className="font-script text-4xl font-bold text-candy-300">Sparkle Bows</p>
+          </div>
+          <p className="mt-4 max-w-md text-base leading-7 text-royal-200">
+            Sparkly hair bows fit for a princess, tied by hand one order at a time. 🎀
           </p>
         </div>
 
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-royal-400">
             Shop
           </p>
-          <div className="mt-5 space-y-3 text-sm text-slate-300">
+          <div className="mt-5 space-y-3 text-sm text-royal-300">
             <Link to="/collections/christmas" className="block transition hover:text-white">
               Christmas bows
             </Link>
             <Link to="/collections/birthday" className="block transition hover:text-white">
               Birthday bows
             </Link>
+            <Link to="/collections/everyday" className="block transition hover:text-white">
+              Everyday bows
+            </Link>
             <Link to="/collections/team-spirit" className="block transition hover:text-white">
-              Team spirit
+              Cheer &amp; team
             </Link>
             <Link to="/team-orders" className="block transition hover:text-white">
               Team &amp; bulk orders
@@ -43,10 +42,10 @@ export default function SiteFooter({ onShowContact }) {
         </div>
 
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-royal-400">
             Business
           </p>
-          <div className="mt-5 space-y-3 text-sm text-slate-300">
+          <div className="mt-5 space-y-3 text-sm text-royal-300">
             <Link to="/privacy" className="block transition hover:text-white">
               Privacy policy
             </Link>
@@ -81,16 +80,13 @@ export default function SiteFooter({ onShowContact }) {
             >
               sparklebowshop@gmail.com
             </a>
-            <p>Professional small-batch production</p>
-            <p>Reliable packaging and fulfillment</p>
           </div>
         </div>
       </div>
-      <div className="border-t border-slate-800">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <div className="border-t border-royal-800">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs text-royal-600 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="space-y-1">
-            <p>Built to support boutique growth, bookkeeping discipline, and premium customer trust.</p>
-            <p>Sparkle Bows is owned and operated by CASSANDRA N PETERSON.</p>
+                        <p>Sparkle Bows is owned and operated by CASSANDRA N PETERSON.</p>
           </div>
           <p>Copyright {new Date().getFullYear()} Sparkle Bows</p>
         </div>

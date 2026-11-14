@@ -7,7 +7,7 @@ const CARD_ELEMENT_OPTIONS = {
     base: {
       fontSize: "16px",
       color: "#0f172a",
-      fontFamily: "Manrope, system-ui, sans-serif",
+      fontFamily: "Nunito, system-ui, sans-serif",
       "::placeholder": { color: "#94a3b8" },
     },
     invalid: {

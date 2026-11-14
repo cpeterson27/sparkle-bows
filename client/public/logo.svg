@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#3b0764"/>
+    </linearGradient>
+    <linearGradient id="loop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8cc8"/>
+      <stop offset="1" stop-color="#ff2d87"/>
+    </linearGradient>
+    <linearGradient id="loopShade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3a3"/>
+      <stop offset="0.55" stop-color="#ffcc33"/>
+      <stop offset="1" stop-color="#e09a00"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <!-- tails -->
+  <path d="M236 300 L176 448 L214 430 L236 466 L262 318 Z" fill="#e01974"/>
+  <path d="M276 300 L336 448 L298 430 L276 466 L250 318 Z" fill="#e01974"/>
+  <!-- loops -->
+  <path d="M244 270 C 170 170, 66 168, 70 262 C 74 356, 178 352, 244 300 Z" fill="url(#loop)"/>
+  <path d="M268 270 C 342 170, 446 168, 442 262 C 438 356, 334 352, 268 300 Z" fill="url(#loop)"/>
+  <path d="M244 270 C 170 170, 66 168, 70 262 C 74 300, 100 320, 132 330 C 110 300, 120 240, 244 282 Z" fill="url(#loopShade)"/>
+  <path d="M268 270 C 342 170, 446 168, 442 262 C 440 290, 424 312, 400 324 C 410 290, 380 240, 268 282 Z" fill="url(#loopShade)"/>
+  <!-- knot -->
+  <rect x="222" y="252" width="68" height="70" rx="26" fill="#ff4fa3" stroke="#d1006b" stroke-width="6"/>
+  <!-- crown -->
+  <path d="M188 214 L176 128 L222 168 L256 106 L290 168 L336 128 L324 214 Z" fill="url(#gold)" stroke="#b87900" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="176" cy="124" r="12" fill="#fff3a3" stroke="#b87900" stroke-width="5"/>
+  <circle cx="256" cy="100" r="13" fill="#fff3a3" stroke="#b87900" stroke-width="5"/>
+  <circle cx="336" cy="124" r="12" fill="#fff3a3" stroke="#b87900" stroke-width="5"/>
+  <circle cx="256" cy="186" r="11" fill="#ff4fa3"/>
+  <!-- sparkles -->
+  <path d="M410 92 L420 120 L448 130 L420 140 L410 168 L400 140 L372 130 L400 120 Z" fill="#ffffff"/>
+  <path d="M104 96 L110 114 L128 120 L110 126 L104 144 L98 126 L80 120 L98 114 Z" fill="#fff3a3"/>
+  <path d="M430 384 L436 400 L452 406 L436 412 L430 428 L424 412 L408 406 L424 400 Z" fill="#fff3a3"/>
+</svg>

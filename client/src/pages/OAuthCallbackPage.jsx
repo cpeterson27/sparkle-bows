@@ -46,7 +46,7 @@ export default function OAuthCallbackPage() {
   }, [completeOAuthLogin, navigate, params]);
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center bg-[#f7f3ee] px-4">
+    <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="rounded-[32px] border border-slate-200 bg-white px-8 py-10 text-center shadow-sm">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
           Account sign-in
