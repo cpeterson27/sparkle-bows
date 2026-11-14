@@ -48,7 +48,7 @@ export default function CollectionPage({ products = [], addToCart }) {
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-royal-100">
             {collection.hero}
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+          {COLLECTIONS.length > 1 && <div className="mt-8 flex flex-wrap justify-center gap-2.5">
             {COLLECTIONS.map((item) => (
               <Link
                 key={item.slug}
@@ -62,7 +62,7 @@ export default function CollectionPage({ products = [], addToCart }) {
                 {item.title}
               </Link>
             ))}
-          </div>
+          </div>}
         </div>
       </section>
 

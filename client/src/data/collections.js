@@ -1,6 +1,8 @@
 // Occasion collections come first (that's how most shoppers look for bows); style collections follow.
 // A collection matches by occasion (product.occasions) or by style (product.category).
-export const COLLECTIONS = [
+import { ACTIVE_OCCASION_IDS } from "../config/shop";
+
+const ALL_COLLECTIONS = [
   {
     slug: "christmas",
     title: "Christmas Bows",
@@ -34,6 +36,9 @@ export const COLLECTIONS = [
     hero: "Soft colors and classic shapes that match any outfit.",
   },
 ];
+
+// Only the categories that are switched on in config/shop.js.
+export const COLLECTIONS = ALL_COLLECTIONS.filter((collection) => ACTIVE_OCCASION_IDS.includes(collection.occasion));
 
 export function productInCollection(product, collection) {
   if (collection.occasion) return Array.isArray(product.occasions) && product.occasions.includes(collection.occasion);

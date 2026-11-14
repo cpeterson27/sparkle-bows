@@ -23,15 +23,6 @@ export default function SiteFooter({ onShowContact }) {
             <Link to="/collections/christmas" className="block transition hover:text-white">
               Christmas bows
             </Link>
-            <Link to="/collections/birthday" className="block transition hover:text-white">
-              Birthday bows
-            </Link>
-            <Link to="/collections/everyday" className="block transition hover:text-white">
-              Everyday bows
-            </Link>
-            <Link to="/collections/team-spirit" className="block transition hover:text-white">
-              Cheer &amp; team
-            </Link>
             <Link to="/team-orders" className="block transition hover:text-white">
               Team &amp; bulk orders
             </Link>

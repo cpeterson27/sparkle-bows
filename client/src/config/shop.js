@@ -24,12 +24,15 @@ export function isChristmasSeason(now = new Date()) {
 }
 
 // Kept to four so the shop is simple to browse (an 8-year-old runs it!). Valentine's / Back to School can return in season.
-export const OCCASIONS = [
+export const ALL_OCCASIONS = [
   { id: "christmas", label: "Christmas", emoji: "🎄" },
   { id: "birthday", label: "Birthday", emoji: "🎂" },
   { id: "team-spirit", label: "Cheer & Team", emoji: "📣" },
   { id: "everyday", label: "Everyday", emoji: "🌸" },
 ];
+// Christmas only for now (keeps supply costs low). Add an id here to bring a category back on the whole site.
+export const ACTIVE_OCCASION_IDS = ["christmas"];
+export const OCCASIONS = ALL_OCCASIONS.filter((occasion) => ACTIVE_OCCASION_IDS.includes(occasion.id));
 
 export const STYLES = [
   { id: "sparkle", label: "Glitter & Sparkle" },

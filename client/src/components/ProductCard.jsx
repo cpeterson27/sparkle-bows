@@ -9,57 +9,96 @@ function formatPrice(price) {
   return `$${Number(price || 0).toFixed(2)}`;
 }
 
-// A photo with a see-through background (a "cutout") sits right on the snow. We check the four corners of the
-// loaded photo: if they're transparent it's a cutout. Other photos get soft, faded edges so they don't look like a box.
-function hasTransparentCorners(img) {
-  try {
-    const size = 24;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, size, size);
-    const corners = [[0, 0], [size - 1, 0], [0, size - 1], [size - 1, size - 1]];
-    return corners.every(([x, y]) => ctx.getImageData(x, y, 1, 1).data[3] < 40);
-  } catch {
-    return false; // photo host didn't allow reading pixels
+// Icicles: tapered, slightly bent, different widths and lengths, some with a drip at the tip.
+// Built once from a fixed pattern so every card looks the same.
+const ICICLES = (() => {
+  const lengths = [8, 22, 12, 40, 16, 6, 30, 52, 14, 9, 26, 44, 11, 18, 7, 34, 20, 10, 46, 15, 8, 28, 12];
+  const widths = [14, 18, 13, 22, 15, 11, 19, 24, 15, 12, 18, 23, 13, 16, 11, 20, 16, 12, 23, 15, 12, 19, 14];
+  const list = [];
+  let x = 4;
+  for (let i = 0; x < 296; i += 1) {
+    const w = widths[i % widths.length];
+    const len = lengths[i % lengths.length];
+    const bend = ((i * 7) % 5) - 2; // tip leans a little left or right
+    list.push({ x, w: Math.min(w, 296 - x), len, bend, drip: len > 25 && i % 3 !== 1 });
+    x += w - 1;
   }
-}
-
-// Hanging icicles of different lengths along the bottom of the card.
-const ICICLES = [14, 26, 10, 34, 18, 28, 12, 38, 20, 30, 12, 24, 16, 32, 10, 22];
+  return list;
+})();
 
 function Icicles() {
-  const step = 300 / ICICLES.length;
   return (
-    <svg viewBox="0 0 300 42" preserveAspectRatio="none" className="mx-auto -mt-px block h-7 w-[86%]" aria-hidden="true">
+    <svg viewBox="0 0 300 64" className="mx-auto -mt-1 block h-auto w-[90%]" aria-hidden="true">
       <defs>
-        <linearGradient id="icicle-ice" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.45" stopColor="#cfe0ff" />
-          <stop offset="1" stopColor="#a9c6ff" stopOpacity="0.75" />
+        <linearGradient id="icicle-body" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#8fb1ea" />
+          <stop offset="0.3" stopColor="#ffffff" />
+          <stop offset="0.55" stopColor="#d4e3fc" />
+          <stop offset="1" stopColor="#7fa3e0" />
         </linearGradient>
+        <linearGradient id="icicle-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="0.75" stopColor="#fff" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0.35" />
+        </linearGradient>
+        <mask id="icicle-mask">
+          <rect width="300" height="64" fill="url(#icicle-fade)" />
+        </mask>
       </defs>
-      {ICICLES.map((length, index) => {
-        const x = index * step;
-        return (
-          <g key={index}>
-            <path d={`M${x} 0 L${x + step} 0 L${x + step / 2} ${length} Z`} fill="url(#icicle-ice)" />
-            <path d={`M${x + step * 0.35} 1 L${x + step / 2} ${length * 0.7}`} stroke="#ffffff" strokeWidth="1.2" opacity="0.9" />
-          </g>
-        );
-      })}
+      <g mask="url(#icicle-mask)">
+        {ICICLES.map(({ x, w, len, bend, drip }, index) => {
+          const tipX = x + w / 2 + bend;
+          return (
+            <g key={index}>
+              <path
+                d={`M${x} 0 C ${x + w * 0.12} ${len * 0.35}, ${tipX - w * 0.14} ${len * 0.8}, ${tipX} ${len} C ${tipX + w * 0.14} ${len * 0.8}, ${x + w * 0.88} ${len * 0.35}, ${x + w} 0 Z`}
+                fill="url(#icicle-body)"
+                stroke="#a7c0ec"
+                strokeWidth="0.6"
+              />
+              <path d={`M${x + w * 0.3} 1 Q ${x + w * 0.38} ${len * 0.45}, ${tipX - 0.5} ${len * 0.82}`} stroke="#ffffff" strokeWidth="1" fill="none" opacity="0.9" />
+              {drip && <ellipse cx={tipX} cy={len + 3.5} rx="1.4" ry="2" fill="#a7c0ec" />}
+            </g>
+          );
+        })}
+      </g>
+      {/* frosty rim the icicles hang from */}
+      <path d="M0 0 H300 V3 Q 150 6 0 3 Z" fill="#eef4ff" />
     </svg>
   );
 }
 
-// Snowy-ledge product card: the bow sits on a snow drift, the details sit on a snow-capped panel with icicles below.
+// Snow drift that slopes up from left to right, with soft blue shading underneath.
+function SnowDrift() {
+  return (
+    <svg viewBox="0 0 300 70" preserveAspectRatio="none" className="relative z-[1] block h-14 w-full" aria-hidden="true">
+      <defs>
+        <linearGradient id="drift-snow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#f3f7ff" />
+        </linearGradient>
+      </defs>
+      {/* blue shadow under the drift's edge */}
+      <path d="M0 70 V48 C 40 46, 90 40, 140 30 C 190 20, 230 5, 262 3 C 286 2, 300 10, 300 22 V70 Z" fill="#b8cdf2" opacity="0.75" />
+      <path d="M0 70 V51 C 40 49, 90 43, 140 33 C 190 23, 230 8, 262 6 C 285 5, 299 13, 300 25 V70 Z" fill="#d6e3fa" />
+      {/* the drift */}
+      <path d="M0 70 V55 C 40 53, 92 47, 142 37 C 192 27, 232 13, 263 11 C 284 10, 297 17, 300 28 V70 Z" fill="url(#drift-snow)" />
+      <path d="M160 33 C 196 25, 228 14, 258 12" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <g fill="#b8cdf2">
+        <circle cx="70" cy="60" r="1.3" />
+        <circle cx="205" cy="34" r="1.1" />
+        <circle cx="120" cy="50" r="0.9" />
+      </g>
+    </svg>
+  );
+}
+
+// Product card: the bow photo exactly as uploaded, a snow drift under it, the details panel, and icicles.
 export function ProductCard({ product, onAddToCart }) {
   const navigate = useNavigate();
   const [showConfetti, setShowConfetti] = useState(false);
 
   const imageUrl = product.images?.[0]?.url || "/logo.svg";
-  const [cutout, setCutout] = useState(false);
   const reviewCount = product.reviews?.length || 0;
   const averageRating = reviewCount ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount : 0;
   const occasion = OCCASIONS.find((item) => product.occasions?.includes(item.id));
@@ -77,40 +116,25 @@ export function ProductCard({ product, onAddToCart }) {
     <>
       <Confetti show={showConfetti} />
       <article onClick={() => navigate(`/product/${product._id}`)} className="group relative flex w-full max-w-[300px] cursor-pointer flex-col">
-        {/* Badges */}
-        <div className="absolute left-2 top-2 z-[4] flex flex-col items-start gap-1.5">
+        <div className="absolute left-1 top-1 z-[4] flex flex-col items-start gap-1.5">
           {product.bestseller && <span className="rounded-full bg-gold-300 px-2.5 py-1 text-[11px] font-extrabold text-royal-900 shadow">👑 Favorite</span>}
           {product.newArrival && <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-extrabold text-candy-600 shadow">New</span>}
         </div>
 
-        {/* The bow, no box */}
-        <div className="relative z-[2] mx-auto -mb-9 flex aspect-square w-[90%] items-end justify-center">
+        {/* The bow, shown just as it was photographed */}
+        <div className="relative z-[2] mx-auto -mb-6 flex aspect-square w-[92%] items-end justify-center">
           <img
             src={imageUrl}
             alt={product.images?.[0]?.alt || product.name}
             loading="lazy"
-            crossOrigin={/^\/|res\.cloudinary\.com/.test(imageUrl) ? "anonymous" : undefined}
-            onLoad={(event) => setCutout(hasTransparentCorners(event.currentTarget))}
-            className={`transition duration-500 group-hover:-translate-y-2 group-hover:rotate-[-3deg] ${
-              cutout
-                ? "max-h-full max-w-full object-contain drop-shadow-[0_16px_14px_rgba(91,33,182,0.35)]"
-                : "h-full w-full object-cover [mask-image:radial-gradient(ellipse_at_center,#000_52%,transparent_71%)]"
-            }`}
+            className="max-h-full max-w-full object-contain transition duration-500 group-hover:-translate-y-2"
           />
-          <SparkleIcon size={18} className="twinkle-star right-3 top-4 text-gold-400" />
-          <SparkleIcon size={12} className="twinkle-star left-4 top-1/3 text-candy-300" style={{ animationDelay: "1.1s" }} />
+          <SparkleIcon size={16} className="twinkle-star -right-1 top-2 text-gold-400" />
         </div>
 
-        {/* Snow cap */}
-        <svg viewBox="0 0 300 44" preserveAspectRatio="none" className="relative z-[1] block h-11 w-full drop-shadow-[0_-4px_6px_rgba(91,33,182,0.10)]" aria-hidden="true">
-          <path d="M0 44 V30 Q 18 10 48 18 Q 74 2 108 14 Q 140 0 170 12 Q 204 -2 236 14 Q 266 4 286 20 Q 298 26 300 32 V44 Z" fill="#ffffff" />
-          <circle cx="62" cy="22" r="1.6" fill="#c7dcff" />
-          <circle cx="190" cy="18" r="1.4" fill="#c7dcff" />
-          <circle cx="250" cy="24" r="1.8" fill="#e9d5ff" />
-        </svg>
+        <SnowDrift />
 
-        {/* Details panel */}
-        <div className="relative z-[1] -mt-px rounded-b-[26px] bg-gradient-to-b from-white via-white to-[#eef4ff] px-3 pb-4 pt-1 text-center sm:px-5 shadow-[0_18px_30px_-20px_rgba(91,33,182,0.45)]">
+        <div className="relative z-[1] -mt-px rounded-b-[22px] bg-gradient-to-b from-white via-white to-[#eef4ff] px-3 pb-4 pt-0 text-center shadow-[0_18px_30px_-22px_rgba(91,33,182,0.45)] sm:px-5">
           <p className="text-xs font-bold text-royal-500">
             {occasion ? `${occasion.emoji} ${occasion.label}` : "✨ Sparkle Bows"}
             {reviewCount > 0 && (
