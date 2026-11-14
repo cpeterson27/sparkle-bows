@@ -325,7 +325,7 @@ export default function App() {
         />
       )}
 
-      <main className={isAdminRoute ? "" : "pt-[92px] sm:pt-[102px]"}>
+      <main className={isAdminRoute ? "" : "pt-[112px] sm:pt-[110px]"}>
         {!isAdminRoute && oauthMessage ? (
           <div className="border-b border-rose-100 bg-rose-50 px-4 py-3 text-center text-sm font-medium text-slate-700">
             {oauthMessage}

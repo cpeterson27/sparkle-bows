@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ShoppingBag, User } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, isChristmasSeason } from "../config/shop";
 
 function NavButton({ children, onClick }) {
   return (
@@ -24,6 +25,7 @@ export default function Header({
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const festive = isChristmasSeason();
 
   const scrollToShop = () => {
     if (location.pathname !== "/") {
@@ -43,10 +45,18 @@ export default function Header({
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 bg-slate-950 text-[11px] font-medium uppercase tracking-[0.22em] text-rose-100">
-        <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-2 text-center sm:px-6 lg:px-8">
-          Handmade statement bows for milestones, gifting, and boutique-quality
-          everyday wear
+      {/* One short line so the header keeps the same height on phones (a taller header covered the page below). */}
+      <div
+        className={`border-b text-[11px] font-medium uppercase tracking-[0.18em] ${
+          festive
+            ? "border-emerald-900 bg-[#0f2e22] text-amber-200"
+            : "border-slate-100 bg-slate-950 text-rose-100"
+        }`}
+      >
+        <div className="mx-auto max-w-7xl truncate px-4 py-2 text-center sm:px-6 lg:px-8">
+          {festive
+            ? `✨ ${BUNDLE.size} for $${BUNDLE.price} · free shipping over $${FREE_SHIPPING_THRESHOLD}`
+            : `Tied by hand · ${BUNDLE.size} for $${BUNDLE.price}`}
         </div>
       </div>
 
@@ -65,7 +75,7 @@ export default function Header({
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
               Sparkle Bows
             </p>
-            <p className="font-serif text-xl text-slate-950 transition group-hover:text-rose-600">
+            <p className="hidden font-serif text-xl text-slate-950 transition group-hover:text-rose-600 sm:block">
               Boutique Hair Accessories
             </p>
           </div>
@@ -184,7 +194,7 @@ export default function Header({
             <button
               type="button"
               onClick={onShowLogin}
-              className="inline-flex items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-slate-950"
+              className="inline-flex items-center whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-slate-950"
             >
               Sign In
             </button>
