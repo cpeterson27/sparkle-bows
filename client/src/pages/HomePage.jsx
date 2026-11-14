@@ -131,7 +131,7 @@ export default function HomePage({ addToCart }) {
               Bows fit for a <span className="sparkle-text font-script text-6xl sm:text-8xl">princess</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-royal-100">
-              {festive ? "Glittery Christmas bows, birthday bows, and cheer bows. " : "Glittery bows for birthdays, cheer, and every day. "}
+              Sparkly Christmas bows for photos, parties, and stockings. 
               Each one is tied after you order it. Pick any {BUNDLE.size} for ${BUNDLE.price}!
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -179,10 +179,10 @@ export default function HomePage({ addToCart }) {
       {/* THE SHOP: one row of occasion chips + every bow */}
       <section id="shop-section" className="mx-auto max-w-7xl scroll-mt-32 px-4 py-16 sm:px-6 lg:px-8">
         <FadeIn>
-          <SectionTitle eyebrow="The bow shop" title="Pick your sparkle">
-            Tap a chip to find the perfect bow.
+          <SectionTitle eyebrow="The bow shop" title={OCCASIONS.length > 1 ? "Pick your sparkle" : "🎄 Christmas bows"}>
+            {OCCASIONS.length > 1 ? "Tap a chip to find the perfect bow." : "Tied by hand for Christmas photos, parties, and stockings."}
           </SectionTitle>
-          <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+          {OCCASIONS.length > 1 && <div className="mt-8 flex flex-wrap justify-center gap-2.5">
             {filters.map((filter) => (
               <button
                 type="button"
@@ -197,7 +197,7 @@ export default function HomePage({ addToCart }) {
                 {filter.emoji} {filter.label}
               </button>
             ))}
-          </div>
+          </div>}
         </FadeIn>
 
         {isLoading ? (
