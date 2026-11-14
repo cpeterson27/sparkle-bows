@@ -68,7 +68,7 @@ export default function CollectionPage({ products = [], addToCart }) {
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         {collectionProducts.length > 0 ? (
-          <div className="grid justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
+          <div className="grid justify-items-center gap-x-4 gap-y-10 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))] sm:gap-x-6 sm:gap-y-12 sm:[grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
             {collectionProducts.map((product) => (
               <ProductCard
                 key={product._id || product.id}

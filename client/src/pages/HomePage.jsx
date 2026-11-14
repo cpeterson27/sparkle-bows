@@ -62,7 +62,7 @@ function SectionTitle({ eyebrow, title, children }) {
   );
 }
 
-const PRODUCT_GRID = "grid justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]";
+const PRODUCT_GRID = "grid justify-items-center gap-x-4 gap-y-10 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))] sm:gap-x-6 sm:gap-y-12 sm:[grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]";
 
 export default function HomePage({ addToCart }) {
   const { user } = useContext(AuthContext);
