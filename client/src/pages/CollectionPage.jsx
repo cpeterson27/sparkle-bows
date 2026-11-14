@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import Seo from "../components/Seo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { COLLECTIONS, getCollectionBySlug } from "../data/collections";
+import { COLLECTIONS, getCollectionBySlug, productInCollection } from "../data/collections";
 
 export default function CollectionPage({ products = [], addToCart }) {
   const { settings } = useSiteSettings();
@@ -15,9 +15,7 @@ export default function CollectionPage({ products = [], addToCart }) {
     return <Navigate to="/" replace />;
   }
 
-  const collectionProducts = products.filter(
-    (product) => product.category === collection.category,
-  );
+  const collectionProducts = products.filter((product) => productInCollection(product, collection));
 
   return (
     <div className="bg-[#f7f3ee]">

@@ -83,7 +83,7 @@ exports.createOrderFromStripe = async (paymentIntent, metadata) => {
       subtotal += product.price * item.quantity;
 
       await Product.findByIdAndUpdate(product._id, {
-        $inc: { inventory: -item.quantity, sales: item.quantity },
+        $inc: { sales: item.quantity }, // made to order: no stock to subtract
       });
     }
 

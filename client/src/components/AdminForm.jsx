@@ -29,12 +29,15 @@ import {
   FileText,
 } from "lucide-react";
 import api from "../api/axios.config";
+import { DEFAULT_MADE_TO_ORDER_DAYS, OCCASIONS, STYLES } from "../config/shop";
 
 const initialForm = {
   name: "",
   price: "",
   materialCost: "",
-  inventory: "",
+  madeToOrderDays: String(DEFAULT_MADE_TO_ORDER_DAYS),
+  bundleEligible: true,
+  occasions: [],
   category: "",
   description: "",
   longDescription: "",
@@ -131,18 +134,12 @@ function SortableImage({ id, img, index, removeImage, updateAlt }) {
 function ProductPreview({ form, images }) {
   const price = parseFloat(form.price) || 0;
   const cost = parseFloat(form.materialCost) || 0;
-  const inventory = parseInt(form.inventory) || 0;
+  const shipDays = parseInt(form.madeToOrderDays, 10) || DEFAULT_MADE_TO_ORDER_DAYS;
   const margin = price > 0 ? (((price - cost) / price) * 100).toFixed(1) : null;
   const profit = price > 0 && cost > 0 ? (price - cost).toFixed(2) : null;
   const mainImage = images[0]?.url ?? null;
 
-  const categoryLabel =
-    {
-      sparkle: "✨ Sparkly",
-      long: "🎀 Long Ribbon",
-      classic: "🎗️ Classic",
-      seasonal: "🌸 Seasonal",
-    }[form.category] ?? null;
+  const categoryLabel = STYLES.find((style) => style.id === form.category)?.label ?? null;
 
   return (
     <div className="flex flex-col gap-5 sticky top-6 w-full">
@@ -275,13 +272,11 @@ function ProductPreview({ form, images }) {
               <div className="flex items-center gap-1.5 mb-1">
                 <Package className="w-3 h-3 text-gray-400" />
                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-                  Stock
+                  Ships in
                 </p>
               </div>
-              <p
-                className={`text-base font-bold ${inventory > 5 ? "text-gray-800" : inventory > 0 ? "text-amber-500" : "text-gray-300"}`}
-              >
-                {inventory > 0 ? `${inventory} units` : "—"}
+              <p className="text-base font-bold text-gray-800">
+                {shipDays} days
               </p>
             </div>
           </div>
@@ -326,7 +321,9 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         name: productToEdit.name || "",
         price: productToEdit.price ?? "",
         materialCost: productToEdit.materialCost ?? "",
-        inventory: productToEdit.inventory ?? "",
+        madeToOrderDays: String(productToEdit.madeToOrderDays ?? DEFAULT_MADE_TO_ORDER_DAYS),
+        bundleEligible: productToEdit.bundleEligible !== false,
+        occasions: Array.isArray(productToEdit.occasions) ? productToEdit.occasions : [],
         category: productToEdit.category || "",
         description: productToEdit.description || "",
         longDescription: productToEdit.longDescription || "",
@@ -350,7 +347,8 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
     if (!form.name) errs.name = "Required";
     if (!form.price) errs.price = "Required";
     if (!form.materialCost) errs.materialCost = "Required";
-    if (!form.inventory) errs.inventory = "Required";
+    const days = parseInt(form.madeToOrderDays, 10);
+    if (!(days >= 1 && days <= 60)) errs.madeToOrderDays = "1–60 days";
     if (!form.category) errs.category = "Required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -374,7 +372,9 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         name: form.name,
         price: parseFloat(form.price),
         materialCost: parseFloat(form.materialCost),
-        inventory: parseInt(form.inventory, 10),
+        madeToOrderDays: parseInt(form.madeToOrderDays, 10),
+        bundleEligible: form.bundleEligible,
+        occasions: form.occasions,
         category: form.category,
         description: form.description.trim(),
         longDescription: form.longDescription.trim(),
@@ -500,21 +500,42 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                     onChange={handleChange}
                     className={inp}
                   >
-                    <option value="">Select category…</option>
-                    <option value="sparkle">✨ Sparkly</option>
-                    <option value="long">🎀 Long Ribbon</option>
-                    <option value="classic">🎗️ Classic</option>
-                    <option value="seasonal">🌸 Seasonal</option>
+                    <option value="">Select style…</option>
+                    {STYLES.map((style) => (
+                      <option key={style.id} value={style.id}>{style.label}</option>
+                    ))}
                   </select>
                 </Field>
               </div>
+              <fieldset className="mt-5">
+                <legend className="text-sm font-semibold text-gray-700">Occasions (shows in these collections)</legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {OCCASIONS.map((occasion) => {
+                    const checked = form.occasions.includes(occasion.id);
+                    return (
+                      <label key={occasion.id} className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm ${checked ? "border-rose-400 bg-rose-50 text-rose-700" : "border-gray-200 text-gray-600"}`}>
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={checked}
+                          onChange={() => setForm((prev) => ({
+                            ...prev,
+                            occasions: checked ? prev.occasions.filter((id) => id !== occasion.id) : [...prev.occasions, occasion.id],
+                          }))}
+                        />
+                        {occasion.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
             </SectionCard>
 
             {/* Pricing */}
             <SectionCard
               icon={DollarSign}
-              title="Pricing & Inventory"
-              subtitle="Price, cost, and stock"
+              title="Pricing & Made to Order"
+              subtitle="Price, cost, and how long it takes to make"
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <Field label="Sale Price ($)" error={errors.price}>
@@ -539,17 +560,23 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                     placeholder="0.00"
                   />
                 </Field>
-                <Field label="Stock Qty" error={errors.inventory}>
+                <Field label="Ships in (days)" error={errors.madeToOrderDays}>
                   <input
                     type="number"
-                    name="inventory"
-                    value={form.inventory}
+                    min="1"
+                    max="60"
+                    name="madeToOrderDays"
+                    value={form.madeToOrderDays}
                     onChange={handleChange}
                     className={inp}
-                    placeholder="0"
+                    placeholder="7"
                   />
                 </Field>
               </div>
+              <label className="mt-5 flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="bundleEligible" checked={form.bundleEligible} onChange={handleChange} />
+                Counts toward the bundle deal (turn off for premium or custom bows)
+              </label>
             </SectionCard>
           </>
         )}

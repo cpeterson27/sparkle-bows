@@ -129,7 +129,7 @@ describe("Stripe payment intent route", () => {
     expect(res.body).toMatchObject({
       shipmentId: "shippo_shipment_123",
       subtotal: 20,
-      freeShippingThreshold: 50,
+      freeShippingThreshold: 35,
       freeShippingEligible: false,
       safetyWarning: expect.stringContaining("Contains small parts"),
       rates: [
@@ -410,12 +410,12 @@ describe("Stripe payment intent route", () => {
     expect(order.shippoRateId).toBe("shippo_rate_123");
   });
 
-  it("rejects checkout when cart inventory is insufficient", async () => {
+  it("made to order: checkout goes ahead even with no stock on hand", async () => {
     const product = await Product.create({
-      name: "Low Stock Bow",
+      name: "Made To Order Bow",
       price: 12,
       category: "sparkle",
-      inventory: 1,
+      inventory: 0,
     });
 
     await Cart.create({
@@ -438,9 +438,8 @@ describe("Stripe payment intent route", () => {
         },
       });
 
-    expect(res.status).toBe(400);
-    expect(res.body).toEqual({ error: "Not enough stock for Low Stock Bow" });
-    expect(mockStripe.tax.calculations.create).not.toHaveBeenCalled();
-    expect(await Order.countDocuments()).toBe(0);
+    // No "Not enough stock" error: the cart goes on to shipping and tax like any order.
+    expect(res.body.error || "").not.toMatch(/stock/i);
+    expect(mockStripe.tax.calculations.create).toHaveBeenCalled();
   });
 });

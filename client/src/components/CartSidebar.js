@@ -18,10 +18,11 @@ import StripeCheckoutForm from "./StripeCheckoutForm";
 import ConfirmModal from "./ConfirmModal";
 import api from "../api/axios.config";
 import { trackBeginCheckout } from "../lib/analytics";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, bundleSavings } from "../config/shop";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const DEFAULT_SHIPPING_POLICY =
-  "Free U.S. shipping on orders over $50. International shipping is calculated at checkout.";
+  `Free U.S. shipping on orders over $${FREE_SHIPPING_THRESHOLD}. International shipping is calculated at checkout.`;
 const DEFAULT_SAFETY_WARNING =
   "WARNING: Contains small parts. Not intended for children under 3. Use with adult supervision. Remove before sleeping.";
 
@@ -68,7 +69,7 @@ export default function CartSidebar({
   const [shippingRates, setShippingRates] = useState([]);
   const [selectedShippingRate, setSelectedShippingRate] = useState(null);
   const [ratesLoading, setRatesLoading] = useState(false);
-  const [ratesSubtotal, setRatesSubtotal] = useState(null);
+  const [, setRatesSubtotal] = useState(null);
   const [shippingPolicy, setShippingPolicy] = useState(DEFAULT_SHIPPING_POLICY);
   const [safetyWarning, setSafetyWarning] = useState(DEFAULT_SAFETY_WARNING);
   const [shippingForm, setShippingForm] = useState({
@@ -87,7 +88,10 @@ export default function CartSidebar({
     user?.addresses?.[0];
   const validCartItems = cart.filter((item) => item?.productId?._id);
   const selectedShippingAmount = Number(selectedShippingRate?.amount || 0);
-  const estimatedTotal = cartTotal + selectedShippingAmount;
+  const bundle = bundleSavings(validCartItems);
+  const discountedSubtotal = Math.max(0, cartTotal - bundle.savings);
+  const toFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - discountedSubtotal);
+  const estimatedTotal = discountedSubtotal + selectedShippingAmount;
   const stripeOptions = useMemo(
     () => (clientSecret ? { clientSecret } : null),
     [clientSecret],
@@ -301,6 +305,7 @@ export default function CartSidebar({
       setOrderId(res.data.orderId || null);
       setCheckoutTotals({
         subtotal: Number(res.data.subtotal || cartTotal),
+        bundleDiscount: Number(res.data.bundleDiscount || 0),
         shippingCost: Number(res.data.shippingCost || 0),
         tax: Number(res.data.tax || 0),
         total: Number(res.data.total || estimatedTotal),
@@ -406,8 +411,14 @@ export default function CartSidebar({
                   <div className="mt-5 space-y-3 text-sm text-slate-600">
                     <div className="flex items-center justify-between">
                       <span>Subtotal</span>
-                      <span>{formatCurrency(checkoutTotals.subtotal)}</span>
+                      <span>{formatCurrency(Number(checkoutTotals.subtotal || 0) + Number(checkoutTotals.bundleDiscount || 0))}</span>
                     </div>
+                    {Number(checkoutTotals.bundleDiscount || 0) > 0 ? (
+                      <div className="flex items-center justify-between font-medium text-emerald-700">
+                        <span>Bundle savings</span>
+                        <span>−{formatCurrency(checkoutTotals.bundleDiscount)}</span>
+                      </div>
+                    ) : null}
                     <div className="flex items-center justify-between">
                       <span>Shipping</span>
                       <span className="text-right">
@@ -792,8 +803,24 @@ export default function CartSidebar({
                 <div className="mt-5 space-y-3 text-sm text-slate-600">
                   <div className="flex items-center justify-between">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(ratesSubtotal || cartTotal)}</span>
+                    <span>{formatCurrency(cartTotal)}</span>
                   </div>
+                  {bundle.savings > 0 ? (
+                    <div className="flex items-center justify-between font-medium text-emerald-700">
+                      <span>Bundle savings ({BUNDLE.size} for ${BUNDLE.price})</span>
+                      <span>−{formatCurrency(bundle.savings)}</span>
+                    </div>
+                  ) : null}
+                  {bundle.toNextBundle > 0 && bundle.eligibleCount > 0 ? (
+                    <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+                      Add {bundle.toNextBundle} more bow{bundle.toNextBundle === 1 ? "" : "s"} to get {BUNDLE.size} for ${BUNDLE.price}.
+                    </p>
+                  ) : null}
+                  <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                    {toFreeShipping > 0
+                      ? `You're ${formatCurrency(toFreeShipping)} away from free U.S. shipping.`
+                      : "You've unlocked free U.S. shipping!"}
+                  </p>
                   <div className="flex items-center justify-between">
                     <span>Shipping</span>
                     <span className="text-right">
@@ -821,7 +848,7 @@ export default function CartSidebar({
                     <span>
                       {selectedShippingRate
                         ? formatCurrency(estimatedTotal)
-                        : formatCurrency(cartTotal)}
+                        : formatCurrency(discountedSubtotal)}
                     </span>
                   </div>
                 </div>

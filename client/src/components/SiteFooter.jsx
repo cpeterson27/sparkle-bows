@@ -24,14 +24,17 @@ export default function SiteFooter({ onShowContact }) {
             Shop
           </p>
           <div className="mt-5 space-y-3 text-sm text-slate-300">
-            <Link to="/" className="block transition hover:text-white">
-              New arrivals
+            <Link to="/collections/christmas" className="block transition hover:text-white">
+              Christmas bows
             </Link>
-            <Link to="/" className="block transition hover:text-white">
-              Best sellers
+            <Link to="/collections/birthday" className="block transition hover:text-white">
+              Birthday bows
             </Link>
-            <Link to="/" className="block transition hover:text-white">
-              Gift-ready bows
+            <Link to="/collections/team-spirit" className="block transition hover:text-white">
+              Team spirit
+            </Link>
+            <Link to="/team-orders" className="block transition hover:text-white">
+              Team &amp; bulk orders
             </Link>
             <Link to="/orders" className="block transition hover:text-white">
               Order history
