@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import api from "../api/axios.config";
 import { DEFAULT_MADE_TO_ORDER_DAYS, OCCASIONS, STYLES } from "../config/shop";
+import { removeImageBackground } from "../lib/removeBackground";
 
 const initialForm = {
   name: "",
@@ -90,7 +91,7 @@ const inp =
   "w-full rounded-lg border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-pink-300 focus:ring-2 focus:ring-pink-100 px-3.5 py-3 text-sm text-gray-800 outline-none transition-all placeholder-gray-300";
 
 // ─── Sortable Image ───────────────────────────────────────────────────────────
-function SortableImage({ id, img, index, removeImage, updateAlt }) {
+function SortableImage({ id, img, index, removeImage, updateAlt, onRemoveBackground, busy }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -99,7 +100,7 @@ function SortableImage({ id, img, index, removeImage, updateAlt }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="relative w-24 h-36 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col items-center pt-2 pb-2 px-1.5 group"
+      className="relative w-24 h-44 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col items-center pt-2 pb-2 px-1.5 group"
     >
       <div
         {...listeners}
@@ -111,8 +112,16 @@ function SortableImage({ id, img, index, removeImage, updateAlt }) {
       <img
         src={img.url}
         alt={img.alt || `preview ${index + 1}`}
-        className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+        className="w-16 h-16 object-contain rounded-lg flex-shrink-0 bg-[repeating-conic-gradient(#f3f4f6_0%_25%,#fff_0%_50%)] bg-[length:12px_12px]"
       />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onRemoveBackground(index)}
+        className="mt-1 w-full rounded-md bg-pink-50 px-1 py-0.5 text-[10px] font-bold text-pink-600 hover:bg-pink-100 disabled:opacity-50"
+      >
+        {busy ? "Working…" : "✂ Remove bg"}
+      </button>
       <button
         type="button"
         onClick={() => removeImage(index)}
@@ -315,6 +324,9 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState("details");
+  const [autoRemoveBg, setAutoRemoveBg] = useState(true);
+  const [bgStatus, setBgStatus] = useState("");
+  const [bgBusyIndex, setBgBusyIndex] = useState(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -406,18 +418,64 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
   const updateAlt = (i, alt) =>
     setImages((p) => p.map((img, idx) => (idx === i ? { ...img, alt } : img)));
 
-  const uploadFile = async (file) => {
+  const sendToCloudinary = async (file) => {
     const fd = new FormData();
     fd.append("image", file);
+    const res = await api.post("/api/uploads", fd);
+    return res.data.url;
+  };
+
+  // Removes the background first (free, in this browser). If that fails, the original photo is uploaded.
+  const uploadFile = async (file, removeBg) => {
+    let toUpload = file;
+    if (removeBg) {
+      try {
+        setBgStatus(`Removing the background from ${file.name}… (the first photo can take a minute)`);
+        toUpload = await removeImageBackground(file, file.name);
+      } catch (err) {
+        console.error("Background removal failed:", err);
+        alert("Couldn't remove the background from this photo, so the original was uploaded.");
+      }
+    }
     try {
-      const res = await api.post("/api/uploads", fd);
-      setImages((p) => [...p, { url: res.data.url, alt: "" }]);
+      setBgStatus(`Uploading ${file.name}…`);
+      const url = await sendToCloudinary(toUpload);
+      setImages((p) => [...p, { url, alt: "" }]);
     } catch (err) {
       alert(`Upload failed: ${err.message}`);
+    } finally {
+      setBgStatus("");
     }
   };
 
-  const onDrop = useCallback((files) => files.forEach(uploadFile), []);
+  // Remove the background from a photo that's already uploaded (e.g. older photos).
+  const removeBackgroundAt = async (index) => {
+    const img = images[index];
+    if (!img) return;
+    setBgBusyIndex(index);
+    try {
+      const file = await removeImageBackground(img.url, "bow.png");
+      const url = await sendToCloudinary(file);
+      setImages((p) => p.map((item, i) => (i === index ? { ...item, url } : item)));
+    } catch (err) {
+      console.error("Background removal failed:", err);
+      alert("Couldn't remove the background from that photo.");
+    } finally {
+      setBgBusyIndex(null);
+    }
+  };
+
+  const onDrop = useCallback(
+    async (files) => {
+      for (const file of files) {
+        // one at a time so the browser doesn't run out of memory
+        // eslint-disable-next-line no-await-in-loop
+        await uploadFile(file, autoRemoveBg);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [autoRemoveBg],
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "image/*": [] },
@@ -785,6 +843,22 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                 </div>
               </div>
 
+              <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={autoRemoveBg}
+                  onChange={(event) => setAutoRemoveBg(event.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-pink-500 focus:ring-pink-400"
+                />
+                Remove the background automatically (free)
+              </label>
+              {bgStatus && (
+                <p className="mt-2 flex items-center gap-2 rounded-lg bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-700">
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-pink-400 border-t-transparent" />
+                  {bgStatus}
+                </p>
+              )}
+
               {/* Uploaded thumbnails */}
               {images.length > 0 && (
                 <div className="mt-5">
@@ -810,6 +884,8 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
                             index={i}
                             removeImage={removeImage}
                             updateAlt={updateAlt}
+                            onRemoveBackground={removeBackgroundAt}
+                            busy={bgBusyIndex === i}
                           />
                         ))}
                       </div>

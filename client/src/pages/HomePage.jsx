@@ -280,17 +280,15 @@ export default function HomePage({ addToCart }) {
           <FadeIn>
             <SectionTitle eyebrow="Happy customers" title="Sparkly reviews" />
           </FadeIn>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
             {featuredReviews.slice(0, 3).map((review, index) => (
-              <FadeIn key={review._id} delay={index * 90}>
-                <article className="h-full rounded-[30px] bg-white p-7 shadow-[0_18px_40px_-24px_rgba(91,33,182,0.45)] ring-1 ring-royal-100">
-                  <div className="flex gap-0.5 text-lg text-gold-400">
-                    {Array.from({ length: review.rating }).map((_, i) => (
-                      <span key={i}>★</span>
-                    ))}
+              <FadeIn key={review._id} delay={index * 90} className="w-full max-w-sm">
+                <article className="rounded-[24px] bg-white px-5 py-4 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.45)] ring-1 ring-royal-100">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-display font-semibold text-candy-600">{review.userName}</p>
+                    <span className="text-sm text-gold-400">{"★".repeat(review.rating)}</span>
                   </div>
-                  <p className="mt-4 text-[15px] leading-7 text-royal-800/85">“{review.text}”</p>
-                  <p className="mt-5 font-display font-semibold text-candy-600">{review.userName}</p>
+                  <p className="mt-1.5 text-[15px] leading-6 text-royal-800/85">“{review.text}”</p>
                 </article>
               </FadeIn>
             ))}

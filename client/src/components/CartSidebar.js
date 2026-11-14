@@ -6,9 +6,7 @@ import {
   ArrowRight,
   Gift,
   Minus,
-  PackageCheck,
   Plus,
-  ShieldCheck,
   ShoppingBag,
   Trash2,
   Truck,
@@ -30,12 +28,29 @@ function formatCurrency(value) {
   return `$${Number(value || 0).toFixed(2)}`;
 }
 
+// Customers see at most two choices: Standard (cheapest) and Faster (quickest one that actually arrives sooner).
+function arrivesText(rate) {
+  const days = Number(rate?.estimatedDays || 0);
+  return days ? `Arrives in about ${days} business day${days === 1 ? "" : "s"} after it ships` : "Tracked delivery";
+}
+
+function pickShippingChoices(rates) {
+  const sorted = [...rates].sort((a, b) => Number(a.amount || 0) - Number(b.amount || 0));
+  const standard = sorted[0];
+  if (!standard) return [];
+  const choices = [{ ...standard, label: standard.freeShipping ? "Free shipping" : "Standard shipping", arrives: arrivesText(standard) }];
+  const standardDays = Number(standard.estimatedDays || 99);
+  const faster = sorted.find((rate) => rate !== standard && Number(rate.estimatedDays || 99) < standardDays);
+  if (faster && !standard.freeShipping) choices.push({ ...faster, label: "Faster shipping", arrives: arrivesText(faster) });
+  return choices;
+}
+
 function ShippingRatePrice({ rate }) {
   if (rate?.freeShipping) {
     return (
       <span className="text-right">
         {Number(rate.actualAmount || 0) > 0 ? (
-          <span className="mr-2 text-xs font-medium text-slate-400 line-through">
+          <span className="mr-2 text-xs font-medium text-royal-400 line-through">
             {formatCurrency(rate.actualAmount)}
           </span>
         ) : null}
@@ -222,8 +237,9 @@ export default function CartSidebar({
         return;
       }
 
-      setShippingRates(rates);
-      setSelectedShippingRate(rates[0]);
+      const choices = pickShippingChoices(rates);
+      setShippingRates(choices);
+      setSelectedShippingRate(choices[0]);
       setRatesSubtotal(Number(res.data?.subtotal || cartTotal));
       setShippingPolicy(res.data?.shippingPolicy || DEFAULT_SHIPPING_POLICY);
       setSafetyWarning(res.data?.safetyWarning || DEFAULT_SAFETY_WARNING);
@@ -328,46 +344,43 @@ export default function CartSidebar({
   };
 
   return (
-    <div className="fixed inset-0 z-[100000] bg-slate-950/45 backdrop-blur-sm">
-      <div className="ml-auto flex h-full w-full max-w-xl flex-col bg-[#fcfaf7] shadow-2xl">
-        <div className="border-b border-slate-200 bg-white px-6 py-5">
+    <div className="fixed inset-0 z-[100000] bg-royal-950/50 backdrop-blur-sm">
+      <div className="ml-auto flex h-full w-full max-w-lg flex-col bg-gradient-to-b from-royal-50 to-candy-50 shadow-2xl">
+        <div className="bg-gradient-to-r from-royal-800 via-royal-700 to-candy-600 px-5 py-5">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                Cart
-              </div>
-              <h2 className="mt-3 font-serif text-3xl text-slate-950">
-                Your order
+              <h2 className="flex items-center gap-2 font-display text-3xl font-semibold text-white">
+                <ShoppingBag className="h-6 w-6 text-gold-300" /> Your bag
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {cartItemCount} item{cartItemCount === 1 ? "" : "s"} selected
+              <p className="mt-1 text-sm font-semibold text-royal-100">
+                {cartItemCount} bow{cartItemCount === 1 ? "" : "s"} ✨
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-slate-200 bg-white p-3 text-slate-600 transition hover:border-rose-300 hover:text-slate-950"
+              aria-label="Close"
+              className="rounded-full bg-white/15 p-2.5 text-white ring-1 ring-white/30 transition hover:bg-white/25"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-5">
           {validCartItems.length === 0 ? (
-            <div className="rounded-[32px] border border-dashed border-slate-300 bg-white p-10 text-center">
-              <ShoppingBag className="mx-auto h-12 w-12 text-slate-300" />
-              <h3 className="mt-4 font-serif text-3xl text-slate-950">
+            <div className="rounded-[32px] border border-dashed border-royal-200 bg-white p-10 text-center">
+              <ShoppingBag className="mx-auto h-12 w-12 text-royal-200" />
+              <h3 className="mt-4 font-display text-3xl text-royal-950">
                 Your cart is empty
               </h3>
-              <p className="mt-3 text-sm leading-7 text-slate-500">
-                Add a few bows to start building a polished order.
+              <p className="mt-3 text-sm leading-7 text-royal-600">
+                Pick a few sparkly bows to fill it up! 🎀
               </p>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-candy-500 to-royal-600 px-6 py-3 text-sm font-bold text-white shadow-lg"
               >
                 Continue shopping
                 <ArrowRight className="h-4 w-4" />
@@ -375,11 +388,11 @@ export default function CartSidebar({
             </div>
           ) : showPayment && clientSecret && stripeOptions ? (
             <div className="space-y-6">
-              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
+              <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                <p className="font-display text-lg font-semibold text-royal-950">
                   Shipping to
                 </p>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
+                <p className="mt-3 text-sm leading-7 text-royal-700">
                   {shippingForm.name}
                   <br />
                   {shippingForm.line1}
@@ -393,22 +406,22 @@ export default function CartSidebar({
               </div>
 
               {isGift && giftMessage ? (
-                <div className="rounded-[32px] border border-amber-200 bg-amber-50 p-6 shadow-sm">
+                <div className="rounded-[28px] bg-gold-200/40 p-5 ring-1 ring-gold-300">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
                     Gift message
                   </p>
-                  <p className="mt-3 text-sm leading-7 text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-royal-800">
                     {giftMessage}
                   </p>
                 </div>
               ) : null}
 
               {checkoutTotals ? (
-                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
+                <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                  <p className="font-display text-lg font-semibold text-royal-950">
                     Final total
                   </p>
-                  <div className="mt-5 space-y-3 text-sm text-slate-600">
+                  <div className="mt-5 space-y-3 text-sm text-royal-700">
                     <div className="flex items-center justify-between">
                       <span>Subtotal</span>
                       <span>{formatCurrency(Number(checkoutTotals.subtotal || 0) + Number(checkoutTotals.bundleDiscount || 0))}</span>
@@ -432,9 +445,8 @@ export default function CartSidebar({
                           />
                         </span>
                         {checkoutTotals.shippingRate ? (
-                          <span className="block text-xs text-slate-400">
-                            {checkoutTotals.shippingRate.provider}{" "}
-                            {checkoutTotals.shippingRate.service}
+                          <span className="block text-xs text-royal-400">
+                            {checkoutTotals.shippingRate.label || selectedShippingRate?.label || "Shipping"}
                           </span>
                         ) : null}
                       </span>
@@ -443,15 +455,15 @@ export default function CartSidebar({
                       <span>Sales tax</span>
                       <span>{formatCurrency(checkoutTotals.tax)}</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
+                    <div className="flex items-center justify-between border-t border-royal-100 pt-3 text-base font-semibold text-royal-950">
                       <span>Total due</span>
                       <span>{formatCurrency(checkoutTotals.total)}</span>
                     </div>
                   </div>
-                  <p className="mt-4 text-xs leading-6 text-slate-500">
+                  <p className="mt-4 text-xs leading-6 text-royal-600">
                     {checkoutTotals.shippingPolicy || shippingPolicy}
                   </p>
-                  <p className="mt-2 text-xs leading-6 text-slate-500">
+                  <p className="mt-2 text-xs leading-6 text-royal-600">
                     {checkoutTotals.safetyWarning || safetyWarning}
                   </p>
                 </div>
@@ -471,285 +483,30 @@ export default function CartSidebar({
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <input
-                    id="gift-order"
-                    type="checkbox"
-                    checked={isGift}
-                    onChange={(event) => setIsGift(event.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-slate-300 text-rose-500 focus:ring-rose-400"
-                  />
-                  <div>
-                    <label
-                      htmlFor="gift-order"
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-slate-950"
-                    >
-                      <Gift className="h-4 w-4 text-rose-500" />
-                      This order is a gift
-                    </label>
-                    <p className="mt-2 text-sm leading-7 text-slate-500">
-                      Send the bow directly to the recipient and include a gift note for the package.
-                    </p>
-                  </div>
-                </div>
-
-                {isGift ? (
-                  <div className="mt-5">
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-medium text-slate-700">
-                        Gift note
-                      </span>
-                      <textarea
-                        value={giftMessage}
-                        onChange={(event) => setGiftMessage(event.target.value)}
-                        maxLength={250}
-                        className="h-28 w-full resize-none rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                        placeholder="Add a short message for the recipient."
-                      />
-                    </label>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
-                  Shipping address
-                </p>
-                <p className="mt-3 text-sm leading-7 text-slate-500">
-                  Review the shipping details below. For gifts, enter the recipient’s name and delivery address here.
-                </p>
-
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <label className="block sm:col-span-2">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Recipient name
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.name}
-                      onChange={(event) =>
-                        updateShippingField("name", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="Recipient full name"
-                      autoComplete="shipping name"
-                    />
-                  </label>
-
-                  <label className="block sm:col-span-2">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Address line 1
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.line1}
-                      onChange={(event) =>
-                        updateShippingField("line1", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="Street address"
-                      autoComplete="shipping address-line1"
-                    />
-                  </label>
-
-                  <label className="block sm:col-span-2">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Address line 2
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.line2}
-                      onChange={(event) =>
-                        updateShippingField("line2", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="Apartment, suite, unit, etc. (optional)"
-                      autoComplete="shipping address-line2"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      City
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.city}
-                      onChange={(event) =>
-                        updateShippingField("city", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="City"
-                      autoComplete="shipping address-level2"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      State / province
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.state}
-                      onChange={(event) =>
-                        updateShippingField("state", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="State or province"
-                      autoComplete="shipping address-level1"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Postal code
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.postalCode}
-                      onChange={(event) =>
-                        updateShippingField("postalCode", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="Postal code"
-                      autoComplete="shipping postal-code"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Country
-                    </span>
-                    <input
-                      type="text"
-                      value={shippingForm.country}
-                      onChange={(event) =>
-                        updateShippingField("country", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="US"
-                      autoComplete="shipping country"
-                    />
-                  </label>
-
-                  <label className="block sm:col-span-2">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
-                      Phone
-                    </span>
-                    <input
-                      type="tel"
-                      value={shippingForm.phone}
-                      onChange={(event) =>
-                        updateShippingField("phone", event.target.value)
-                      }
-                      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"
-                      placeholder="Required for international shipping"
-                      autoComplete="shipping tel"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
-                      Shipping options
-                    </p>
-                    <p className="mt-3 text-sm leading-7 text-slate-500">
-                      Rates are quoted from Shippo for the delivery address above.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLoadShippingRates}
-                    disabled={ratesLoading}
-                    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-rose-300 hover:text-rose-600 disabled:opacity-50"
-                  >
-                    {ratesLoading
-                      ? "Loading rates..."
-                      : shippingRates.length
-                        ? "Refresh rates"
-                        : "Load rates"}
-                  </button>
-                </div>
-
-                {shippingRates.length ? (
-                  <div className="mt-5 space-y-3">
-                    {shippingRates.map((rate) => {
-                      const isSelected =
-                        selectedShippingRate?.rateKey === rate.rateKey ||
-                        selectedShippingRate?.id === rate.id;
-                      return (
-                        <label
-                          key={rate.rateKey || rate.id}
-                          className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
-                            isSelected
-                              ? "border-rose-300 bg-rose-50"
-                              : "border-slate-200 bg-slate-50 hover:border-rose-200"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="shipping-rate"
-                            checked={isSelected}
-                            onChange={() => setSelectedShippingRate(rate)}
-                            className="mt-1 h-4 w-4 border-slate-300 text-rose-500 focus:ring-rose-400"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold text-slate-950">
-                              {rate.provider} {rate.service}
-                            </span>
-                            <span className="mt-1 block text-xs leading-5 text-slate-500">
-                              {rate.estimatedDays
-                                ? `${rate.estimatedDays} business day${
-                                    Number(rate.estimatedDays) === 1 ? "" : "s"
-                                  }`
-                                : rate.durationTerms || "Carrier delivery estimate"}
-                            </span>
-                          </span>
-                          <span className="text-sm font-semibold text-slate-950">
-                            <ShippingRatePrice rate={rate} />
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                    Enter the shipping address, then load live carrier rates before payment.
-                  </div>
-                )}
-              </div>
-
               <div className="space-y-4">
                 {validCartItems.map((item) => (
                   <article
                     key={cartLineKey(item)}
-                    className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm"
+                    className="rounded-[24px] bg-white p-3 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100"
                   >
                     <div className="flex gap-4">
                       <img
                         src={item.productId.images?.[0]?.url}
                         alt={item.productId.images?.[0]?.alt || item.productId.name}
-                        className="h-24 w-24 rounded-2xl object-cover"
+                        className="h-20 w-20 rounded-2xl bg-royal-50 object-contain"
                       />
                       <div className="flex flex-1 flex-col">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                              {item.productId.category || "Signature bow"}
-                            </p>
-                            <h3 className="mt-1 font-semibold text-slate-950">
+                            <h3 className="font-display text-base font-semibold text-royal-950">
                               {item.productId.name}
                             </h3>
                             {item.personalization ? (
-                              <p className="mt-1 text-xs font-medium text-rose-600">
+                              <p className="mt-1 text-xs font-medium text-candy-600">
                                 Personalized: “{item.personalization}”
                               </p>
                             ) : null}
-                            <p className="mt-2 text-sm font-medium text-slate-600">
+                            <p className="mt-0.5 text-xs font-semibold text-royal-500">
                               ${linePrice(item).toFixed(2)} each
                             </p>
                           </div>
@@ -761,24 +518,24 @@ export default function CartSidebar({
                                 name: item.productId.name,
                               })
                             }
-                            className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                            className="rounded-full border border-royal-100 p-2 text-royal-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
 
-                        <div className="mt-4 flex items-center justify-between">
-                          <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 p-1">
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="inline-flex items-center rounded-full border border-royal-100 bg-royal-50 p-1">
                             <button
                               type="button"
                               onClick={() =>
                                 onUpdateQuantity(cartLineKey(item), item.quantity - 1)
                               }
-                              className="rounded-full p-2 text-slate-700 transition hover:bg-white"
+                              className="rounded-full p-2 text-royal-800 transition hover:bg-white"
                             >
                               <Minus className="h-4 w-4" />
                             </button>
-                            <span className="min-w-10 text-center text-sm font-semibold text-slate-950">
+                            <span className="min-w-10 text-center text-sm font-semibold text-royal-950">
                               {item.quantity}
                             </span>
                             <button
@@ -786,12 +543,12 @@ export default function CartSidebar({
                               onClick={() =>
                                 onUpdateQuantity(cartLineKey(item), item.quantity + 1)
                               }
-                              className="rounded-full p-2 text-slate-700 transition hover:bg-white"
+                              className="rounded-full p-2 text-royal-800 transition hover:bg-white"
                             >
                               <Plus className="h-4 w-4" />
                             </button>
                           </div>
-                          <p className="text-base font-semibold text-slate-950">
+                          <p className="text-base font-semibold text-royal-950">
                             ${(Number(item.productId.price || 0) * item.quantity).toFixed(2)}
                           </p>
                         </div>
@@ -801,11 +558,11 @@ export default function CartSidebar({
                 ))}
               </div>
 
-              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
+              <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                <p className="font-display text-lg font-semibold text-royal-950">
                   Order summary
                 </p>
-                <div className="mt-5 space-y-3 text-sm text-slate-600">
+                <div className="mt-5 space-y-3 text-sm text-royal-700">
                   <div className="flex items-center justify-between">
                     <span>Subtotal</span>
                     <span>{formatCurrency(cartTotal)}</span>
@@ -817,11 +574,11 @@ export default function CartSidebar({
                     </div>
                   ) : null}
                   {bundle.toNextBundle > 0 && bundle.eligibleCount > 0 ? (
-                    <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+                    <p className="rounded-xl bg-candy-50 px-3 py-2 text-xs font-medium text-candy-700">
                       Add {bundle.toNextBundle} more bow{bundle.toNextBundle === 1 ? "" : "s"} to get {BUNDLE.size} for ${BUNDLE.price}.
                     </p>
                   ) : null}
-                  <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                  <p className="rounded-xl bg-royal-50 px-3 py-2 text-xs font-medium text-royal-700">
                     {toFreeShipping > 0
                       ? `You're ${formatCurrency(toFreeShipping)} away from free U.S. shipping.`
                       : "You've unlocked free U.S. shipping!"}
@@ -834,22 +591,15 @@ export default function CartSidebar({
                           <span className="block">
                             <ShippingRatePrice rate={selectedShippingRate} />
                           </span>
-                          <span className="block text-xs text-slate-400">
-                            {selectedShippingRate.provider}{" "}
-                            {selectedShippingRate.service}
-                          </span>
+                          <span className="block text-xs text-royal-400">{selectedShippingRate.label}</span>
                         </>
                       ) : (
-                        "Select a rate"
+                        "Add address"
                       )}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>Estimated tax</span>
-                    <span>Calculated after rate selection</span>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
-                    <span>Total before tax</span>
+                  <div className="flex items-center justify-between border-t border-royal-100 pt-3 text-base font-semibold text-royal-950">
+                    <span>Total <span className="text-xs font-semibold text-royal-500">(tax added at payment)</span></span>
                     <span>
                       {selectedShippingRate
                         ? formatCurrency(estimatedTotal)
@@ -858,28 +608,240 @@ export default function CartSidebar({
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-2 rounded-2xl bg-slate-50 px-4 py-4 text-xs leading-6 text-slate-500">
-                  <p>{shippingPolicy}</p>
-                  <p>{safetyWarning}</p>
+
+              </div>
+              <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                <p className="font-display text-lg font-semibold text-royal-950">
+                  Ship to
+                </p>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className="block sm:col-span-2">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Recipient name
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.name}
+                      onChange={(event) =>
+                        updateShippingField("name", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="Recipient full name"
+                      autoComplete="shipping name"
+                    />
+                  </label>
+
+                  <label className="block sm:col-span-2">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Address line 1
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.line1}
+                      onChange={(event) =>
+                        updateShippingField("line1", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="Street address"
+                      autoComplete="shipping address-line1"
+                    />
+                  </label>
+
+                  <label className="block sm:col-span-2">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Address line 2
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.line2}
+                      onChange={(event) =>
+                        updateShippingField("line2", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="Apartment, suite, unit, etc. (optional)"
+                      autoComplete="shipping address-line2"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      City
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.city}
+                      onChange={(event) =>
+                        updateShippingField("city", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="City"
+                      autoComplete="shipping address-level2"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      State / province
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.state}
+                      onChange={(event) =>
+                        updateShippingField("state", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="State or province"
+                      autoComplete="shipping address-level1"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Postal code
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.postalCode}
+                      onChange={(event) =>
+                        updateShippingField("postalCode", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="Postal code"
+                      autoComplete="shipping postal-code"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Country
+                    </span>
+                    <input
+                      type="text"
+                      value={shippingForm.country}
+                      onChange={(event) =>
+                        updateShippingField("country", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="US"
+                      autoComplete="shipping country"
+                    />
+                  </label>
+
+                  <label className="block sm:col-span-2">
+                    <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                      Phone
+                    </span>
+                    <input
+                      type="tel"
+                      value={shippingForm.phone}
+                      onChange={(event) =>
+                        updateShippingField("phone", event.target.value)
+                      }
+                      className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                      placeholder="Required for international shipping"
+                      autoComplete="shipping tel"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                <p className="flex items-center gap-2 font-display text-lg font-semibold text-royal-950">
+                  <Truck className="h-5 w-5 text-candy-500" /> Shipping
+                </p>
+                {ratesLoading ? (
+                  <p className="mt-3 flex items-center gap-2 rounded-2xl bg-royal-50 px-4 py-3 text-sm font-semibold text-royal-700">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-candy-400 border-t-transparent" />
+                    Finding shipping options...
+                  </p>
+                ) : shippingRates.length ? (
+                  <div className="mt-3 space-y-2.5">
+                    {shippingRates.map((rate) => {
+                      const isSelected =
+                        selectedShippingRate?.rateKey === rate.rateKey ||
+                        selectedShippingRate?.id === rate.id;
+                      return (
+                        <label
+                          key={rate.rateKey || rate.id}
+                          className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 py-3 transition ${
+                            isSelected ? "border-candy-400 bg-candy-50" : "border-royal-100 bg-white hover:border-candy-200"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="shipping-rate"
+                            checked={isSelected}
+                            onChange={() => setSelectedShippingRate(rate)}
+                            className="h-4 w-4 border-royal-300 text-candy-500 focus:ring-candy-400"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-extrabold text-royal-950">{rate.label}</span>
+                            <span className="block text-xs text-royal-500">{rate.arrives}</span>
+                          </span>
+                          <span className="text-sm font-extrabold text-royal-950">
+                            <ShippingRatePrice rate={rate} />
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-royal-50 px-4 py-3 text-sm text-royal-600">
+                    Fill in the address above and shipping prices will show up here.
+                    {error && canQuoteShipping() ? (
+                      <button type="button" onClick={() => handleLoadShippingRates()} className="ml-1 font-bold text-candy-600 underline">
+                        Try again
+                      </button>
+                    ) : null}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-[28px] bg-white p-5 shadow-[0_14px_34px_-24px_rgba(91,33,182,0.5)] ring-1 ring-royal-100">
+                <div className="flex items-start gap-3">
+                  <input
+                    id="gift-order"
+                    type="checkbox"
+                    checked={isGift}
+                    onChange={(event) => setIsGift(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-royal-200 text-candy-500 focus:ring-candy-400"
+                  />
+                  <div>
+                    <label
+                      htmlFor="gift-order"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-royal-950"
+                    >
+                      <Gift className="h-4 w-4 text-candy-500" />
+                      This order is a gift
+                    </label>
+                    <p className="mt-2 text-sm leading-7 text-royal-600">
+                      We can ship straight to them with a note.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                    <ShieldCheck className="h-4 w-4 text-rose-500" />
-                    <p className="mt-2 font-semibold text-slate-950">Secure payment</p>
+                {isGift ? (
+                  <div className="mt-5">
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                        Gift note
+                      </span>
+                      <textarea
+                        value={giftMessage}
+                        onChange={(event) => setGiftMessage(event.target.value)}
+                        maxLength={250}
+                        className="h-28 w-full resize-none rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                        placeholder="Add a short message for the recipient."
+                      />
+                    </label>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                    <Truck className="h-4 w-4 text-rose-500" />
-                    <p className="mt-2 font-semibold text-slate-950">Tracked shipping</p>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                    <PackageCheck className="h-4 w-4 text-rose-500" />
-                    <p className="mt-2 font-semibold text-slate-950">Gift-ready packaging</p>
-                  </div>
-                </div>
+                ) : null}
+              </div>
 
+              <div>
                 {error ? (
-                  <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {error}
                   </div>
                 ) : null}
@@ -888,21 +850,22 @@ export default function CartSidebar({
                   type="button"
                   onClick={handleCheckout}
                   disabled={loading || !selectedShippingRate}
-                  className="mt-6 w-full rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50"
+                  className="w-full rounded-full bg-gradient-to-r from-candy-500 to-royal-600 px-6 py-4 text-base font-extrabold text-white shadow-lg shadow-candy-500/30 transition hover:scale-[1.01] disabled:opacity-50"
                 >
                   {loading
                     ? "Preparing checkout..."
                     : selectedShippingRate
-                      ? "Proceed to secure checkout"
-                      : "Select shipping to continue"}
+                      ? "🔒 Continue to payment"
+                      : "Add your address to continue"}
                 </button>
 
                 {!user ? (
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-royal-600">
                     Sign in first so we can connect your order to your account.
                   </p>
                 ) : null}
               </div>
+                <p className="mt-3 text-center text-[11px] leading-5 text-royal-400">{safetyWarning}</p>
             </div>
           )}
         </div>
