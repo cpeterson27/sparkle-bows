@@ -75,19 +75,20 @@ function buildToAddress(order) {
   };
 }
 
+// Defaults match a 6x10 bubble mailer: ~1.5 oz for the mailer + bow card, ~1 oz per bow.
 function buildParcel(order) {
   const itemCount = (order.items || []).reduce(
     (sum, item) => sum + Number(item.quantity || 0),
     0,
   );
   const weightOz =
-    getEnvNumber("SHIPPO_BASE_WEIGHT_OZ", 4) +
-    itemCount * getEnvNumber("SHIPPO_PER_ITEM_WEIGHT_OZ", 1.5);
+    getEnvNumber("SHIPPO_BASE_WEIGHT_OZ", 1.5) +
+    itemCount * getEnvNumber("SHIPPO_PER_ITEM_WEIGHT_OZ", 1);
 
   return {
     length: String(getEnvNumber("SHIPPO_PARCEL_LENGTH_IN", 10)),
-    width: String(getEnvNumber("SHIPPO_PARCEL_WIDTH_IN", 8)),
-    height: String(getEnvNumber("SHIPPO_PARCEL_HEIGHT_IN", 2)),
+    width: String(getEnvNumber("SHIPPO_PARCEL_WIDTH_IN", 6)),
+    height: String(getEnvNumber("SHIPPO_PARCEL_HEIGHT_IN", 1)),
     distance_unit: "in",
     weight: String(Number(weightOz.toFixed(2))),
     mass_unit: "oz",
