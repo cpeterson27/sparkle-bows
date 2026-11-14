@@ -93,7 +93,7 @@ export function TwinklingStars({ count = 28 }) {
   );
 }
 
-// Santa in his sleigh pulled by two reindeer, leaving a sparkle trail. Crosses the sky every 22 seconds.
+// Santa in his sleigh pulled by two reindeer (facing left, the way it flies), leaving a sparkle trail. Crosses every 22 seconds.
 export function SantaSleigh() {
   return (
     <div className="santa-flyby" aria-hidden="true">
@@ -107,13 +107,13 @@ export function SantaSleigh() {
         </g>
         {/* reins */}
         <path d="M68 40 Q 110 52 150 50" stroke="#ffcc33" strokeWidth="1.5" fill="none" />
-        {/* reindeer (2) */}
+        {/* reindeer (2), mirrored to face left */}
         {[0, 44].map((x) => (
-          <g key={x} transform={`translate(${x},0)`}>
+          <g key={x} transform={`translate(${x + 78},0) scale(-1,1)`}>
             <ellipse cx="34" cy="44" rx="16" ry="8" fill="#8b5a2b" />
             <circle cx="50" cy="36" r="6" fill="#8b5a2b" />
             <path d="M52 30 l4 -10 M55 24 l5 -2 M50 30 l-2 -10 M48 23 l-5 -2" stroke="#5c3a1a" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="56" cy="37" r="2.2" fill={x === 0 ? "#ff2d87" : "#3b1f0a"} />
+            <circle cx="56" cy="37" r="2.2" fill={x === 0 ? "#ff2d87" : "#8b5a2b"} />
             <g className="reindeer-legs" stroke="#5c3a1a" strokeWidth="2.5" strokeLinecap="round">
               <path d="M24 50 l-4 10 M30 51 l-2 10 M40 51 l3 10 M45 50 l5 9" />
             </g>
@@ -136,40 +136,57 @@ export function SantaSleigh() {
   );
 }
 
-// A storybook castle silhouette with glowing windows, sitting on a snowy hill.
+// A storybook castle with glowing windows on a snowy hill. The castle keeps its shape (never cropped);
+// the snow hill stretches across the full width underneath it.
 export function Castle({ className = "" }) {
   return (
-    <svg viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice" className={className} aria-hidden="true">
-      <defs>
-        <linearGradient id="castle-stone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#c4a3f5" />
-          <stop offset="1" stopColor="#7c3aed" />
-        </linearGradient>
-      </defs>
-      <g fill="url(#castle-stone)" opacity="0.92">
-        <rect x="470" y="90" width="260" height="140" />
-        <rect x="420" y="60" width="60" height="170" />
-        <rect x="720" y="60" width="60" height="170" />
-        <rect x="570" y="20" width="60" height="210" />
-        <path d="M410 60 L450 0 L490 60 Z" fill="#ff5fa8" />
-        <path d="M710 60 L750 0 L790 60 Z" fill="#ff5fa8" />
-        <path d="M560 20 L600 -40 L640 20 Z" fill="#ff5fa8" />
-        <rect x="380" y="150" width="50" height="80" />
-        <rect x="770" y="150" width="50" height="80" />
-        <path d="M374 150 L405 112 L436 150 Z" fill="#ff94c6" />
-        <path d="M764 150 L795 112 L826 150 Z" fill="#ff94c6" />
-      </g>
-      <g fill="#ffe066">
-        <path d="M585 150 a15 15 0 0 1 30 0 v40 h-30 z" />
-        <rect x="440" y="100" width="18" height="26" rx="9" />
-        <rect x="742" y="100" width="18" height="26" rx="9" />
-        <rect x="590" y="60" width="18" height="26" rx="9" />
-        <rect x="510" y="130" width="16" height="22" rx="8" />
-        <rect x="674" y="130" width="16" height="22" rx="8" />
-      </g>
-      <path d="M0 230 Q 300 190 600 225 T 1200 220 V 260 H 0 Z" fill="#ffffff" />
-      <path d="M0 244 Q 400 214 800 240 T 1200 238 V 260 H 0 Z" fill="#f6edff" />
-    </svg>
+    <div className={className} aria-hidden="true">
+      <svg viewBox="360 -50 480 285" preserveAspectRatio="xMidYMax meet" className="absolute inset-0 h-full w-full">
+        <defs>
+          <linearGradient id="castle-stone" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#c4a3f5" />
+            <stop offset="1" stopColor="#7c3aed" />
+          </linearGradient>
+        </defs>
+        <g fill="url(#castle-stone)" opacity="0.95">
+          <rect x="470" y="90" width="260" height="145" />
+          <rect x="420" y="60" width="60" height="175" />
+          <rect x="720" y="60" width="60" height="175" />
+          <rect x="570" y="20" width="60" height="215" />
+          <rect x="380" y="150" width="50" height="85" />
+          <rect x="770" y="150" width="50" height="85" />
+        </g>
+        <g fill="#ff5fa8">
+          <path d="M410 60 L450 0 L490 60 Z" />
+          <path d="M710 60 L750 0 L790 60 Z" />
+          <path d="M560 20 L600 -40 L640 20 Z" />
+        </g>
+        <g fill="#ff94c6">
+          <path d="M374 150 L405 112 L436 150 Z" />
+          <path d="M764 150 L795 112 L826 150 Z" />
+        </g>
+        <g stroke="#ffcc33" strokeWidth="2">
+          <path d="M450 0 v-14 M600 -40 v-14 M750 0 v-14" />
+        </g>
+        <g fill="#ffcc33">
+          <path d="M450 -14 l12 4 -12 4 z" />
+          <path d="M600 -54 l12 4 -12 4 z" />
+          <path d="M750 -14 l12 4 -12 4 z" />
+        </g>
+        <g fill="#ffe066">
+          <path d="M585 150 a15 15 0 0 1 30 0 v45 h-30 z" />
+          <rect x="440" y="100" width="18" height="26" rx="9" />
+          <rect x="742" y="100" width="18" height="26" rx="9" />
+          <rect x="590" y="60" width="18" height="26" rx="9" />
+          <rect x="510" y="130" width="16" height="22" rx="8" />
+          <rect x="674" y="130" width="16" height="22" rx="8" />
+        </g>
+      </svg>
+      <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-10 w-full sm:h-14">
+        <path d="M0 30 Q 300 0 600 26 T 1200 22 V 60 H 0 Z" fill="#ffffff" />
+        <path d="M0 44 Q 400 22 800 42 T 1200 40 V 60 H 0 Z" fill="#f6edff" />
+      </svg>
+    </div>
   );
 }
 

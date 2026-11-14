@@ -95,13 +95,14 @@
 @keyframes sparkle-text { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
 
 /* Santa's sleigh: crosses the sky every 22 seconds */
-.santa-flyby { position: absolute; top: 18%; left: 0; width: 260px; pointer-events: none; z-index: 2; animation: santa-fly 22s linear infinite; }
+.santa-flyby { position: absolute; top: 7%; left: 0; width: 260px; pointer-events: none; z-index: 2; animation: santa-fly 22s linear infinite; }
+/* Flies right to left: reindeer in front (left), sleigh and sparkle trail behind. */
 @keyframes santa-fly {
-  0% { transform: translate(-320px, 40px) rotate(-4deg); opacity: 0; }
+  0% { transform: translate(105vw, 30px) rotate(4deg); opacity: 0; }
   4% { opacity: 1; }
-  45% { transform: translate(55vw, -30px) rotate(-8deg); opacity: 1; }
-  60% { transform: translate(105vw, -60px) rotate(-6deg); opacity: 0; }
-  100% { transform: translate(105vw, -60px); opacity: 0; }
+  45% { transform: translate(40vw, -10px) rotate(6deg); opacity: 1; }
+  60% { transform: translate(-320px, -40px) rotate(5deg); opacity: 0; }
+  100% { transform: translate(-320px, -40px); opacity: 0; }
 }
 .santa-flyby .reindeer-legs { animation: gallop 0.5s ease-in-out infinite alternate; transform-origin: center; }
 @keyframes gallop { from { transform: translateY(0); } to { transform: translateY(3px); } }
