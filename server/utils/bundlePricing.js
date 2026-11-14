@@ -2,6 +2,13 @@
 // eligible bows first, so a premium bow never gets discounted below what it costs to make. Returns dollars off.
 const BUNDLE_SIZE = Number(process.env.BUNDLE_SIZE || 3);
 const BUNDLE_PRICE = Number(process.env.BUNDLE_PRICE || 25);
+const PERSONALIZATION_FEE = Number(process.env.PERSONALIZATION_FEE || 3);
+
+// Personalization text kept for a cart line: only on personalizable bows, trimmed, at most 40 characters.
+function cleanPersonalization(text, product) {
+  if (!product?.personalizable) return "";
+  return String(text || "").replace(/\s+/g, " ").trim().slice(0, 40);
+}
 
 function bundleDiscount(items = [], { size = BUNDLE_SIZE, price = BUNDLE_PRICE } = {}) {
   if (!(size >= 2) || !(price > 0)) return 0;
@@ -31,4 +38,4 @@ function spreadDiscount(lineItems, discountCents) {
   });
 }
 
-module.exports = { bundleDiscount, spreadDiscount, BUNDLE_SIZE, BUNDLE_PRICE };
+module.exports = { bundleDiscount, spreadDiscount, cleanPersonalization, BUNDLE_SIZE, BUNDLE_PRICE, PERSONALIZATION_FEE };

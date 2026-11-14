@@ -16,7 +16,7 @@ import Seo from "../components/Seo";
 import { fetchProductById } from "../api/products";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { trackViewItem } from "../lib/analytics";
-import { BUNDLE, FREE_SHIPPING_THRESHOLD, madeToOrderLabel } from "../config/shop";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, PERSONALIZATION_FEE, madeToOrderLabel } from "../config/shop";
 
 function formatPrice(price) {
   return `$${Number(price || 0).toFixed(2)}`;
@@ -50,6 +50,7 @@ export default function ProductPage({
   const product = productFromList || fetchedProduct;
 
   const [quantity, setQuantity] = useState(1);
+  const [personalization, setPersonalization] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -145,7 +146,7 @@ export default function ProductPage({
   const safetyWarning = product.safetyWarning || DEFAULT_SAFETY_WARNING;
 
   const handleAddToCart = () => {
-    onAddToCart(product, quantity);
+    onAddToCart(product, quantity, product.personalizable ? personalization : "");
     setShowConfetti(true);
     window.setTimeout(() => setShowConfetti(false), 1500);
   };
@@ -377,6 +378,24 @@ export default function ProductPage({
                   </button>
                 </div>
               </div>
+
+              {product.personalizable ? (
+                <label className="mt-6 block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-950">
+                    Personalize it (optional, +${PERSONALIZATION_FEE})
+                  </span>
+                  <input
+                    id="bow-personalization"
+                    type="text"
+                    maxLength={40}
+                    value={personalization}
+                    onChange={(event) => setPersonalization(event.target.value)}
+                    placeholder="Name, initial, or team colors"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  />
+                  <span className="mt-1 block text-xs text-slate-500">Leave blank for no personalization.</span>
+                </label>
+              ) : null}
 
               <button
                 type="button"

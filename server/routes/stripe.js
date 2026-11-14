@@ -13,7 +13,8 @@ const STRIPE_TAX_PREVIEW_VERSION =
 const DEFAULT_PRODUCT_TAX_CODE = process.env.STRIPE_DEFAULT_PRODUCT_TAX_CODE;
 const DEFAULT_SHIPPING_TAX_CODE = process.env.STRIPE_DEFAULT_SHIPPING_TAX_CODE;
 const FREE_SHIPPING_THRESHOLD = Number(process.env.FREE_SHIPPING_THRESHOLD || 35);
-const { bundleDiscount, spreadDiscount, BUNDLE_SIZE, BUNDLE_PRICE } = require("../utils/bundlePricing");
+const { trackStartedCheckout } = require("../services/klaviyoEvents");
+const { bundleDiscount, spreadDiscount, cleanPersonalization, BUNDLE_SIZE, BUNDLE_PRICE, PERSONALIZATION_FEE } = require("../utils/bundlePricing");
 const SAFETY_WARNING =
   "WARNING: Contains small parts. Not intended for children under 3. Use with adult supervision. Remove before sleeping.";
 
@@ -182,16 +183,22 @@ async function buildOrderItemsFromCart(cart) {
     }
     // Made to order: every bow can be ordered; there is no stock to run out of.
 
-    subtotal += product.price * item.quantity;
+    const personalization = cleanPersonalization(item.personalization, product);
+    const unitPrice = product.price + (personalization ? PERSONALIZATION_FEE : 0);
+    subtotal += unitPrice * item.quantity;
     orderItems.push({
       productId: product._id,
-      name: product.name,
+      // The name carries the personalization so it shows on the order board, emails, and packing slip.
+      name: personalization ? `${product.name} (personalized: "${personalization}")` : product.name,
+      personalization,
       quantity: item.quantity,
-      price: product.price,
+      price: unitPrice,
+      basePrice: product.price,
+      bundleEligible: product.bundleEligible,
       cost: Number(product.materialCost || 0),
     });
     taxLineItems.push({
-      amount: toCents(product.price * item.quantity),
+      amount: toCents(unitPrice * item.quantity),
       quantity: item.quantity,
       reference: product._id.toString(),
       tax_behavior: "exclusive",
@@ -201,11 +208,9 @@ async function buildOrderItemsFromCart(cart) {
     });
   }
 
-  const discount = bundleDiscount(cart.items.map((item) => ({
-    price: orderItems.find((line) => String(line.productId) === String(item.productId?._id))?.price,
-    quantity: item.quantity,
-    bundleEligible: item.productId?.bundleEligible,
-  })));
+  // Bundle pricing uses each bow's base price; a personalization fee is never discounted.
+  const discount = bundleDiscount(orderItems.map((line) => ({ price: line.basePrice, quantity: line.quantity, bundleEligible: line.bundleEligible })));
+  for (const line of orderItems) { delete line.basePrice; delete line.bundleEligible; }
   return {
     subtotal: Math.round((subtotal - discount) * 100) / 100,
     bundleDiscount: discount,
@@ -435,6 +440,9 @@ router.post("/create-payment-intent", optionalAuth, async (req, res) => {
       isGift: !!isGift,
       giftMessage: giftMessage || "",
     });
+
+    // Abandoned-cart flow in Klaviyo starts from this event (not awaited: never slows checkout).
+    trackStartedCheckout({ email: customerEmail, name: customerName, orderId: order._id, items: orderItems, total }).catch(() => {});
 
     logger.info("Stripe PI created", {
       paymentIntentId: paymentIntent.id,

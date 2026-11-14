@@ -22,6 +22,13 @@ const siteSettingsSchema = new mongoose.Schema(
     organizationName: { type: String, default: "Sparkle Bows" },
     googleAnalyticsId: { type: String, default: "" },
     googleTagManagerId: { type: String, default: "" },
+    // "Meet the maker" section on the homepage (shown once a story is filled in) and social links.
+    makerName: { type: String, default: "" },
+    makerStory: { type: String, default: "" },
+    makerPhoto: { type: String, default: "" },
+    instagramUrl: { type: String, default: "" },
+    tiktokUrl: { type: String, default: "" },
+    facebookUrl: { type: String, default: "" },
   },
   { timestamps: true }
 );

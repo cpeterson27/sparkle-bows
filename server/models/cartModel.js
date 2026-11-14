@@ -15,6 +15,8 @@ const cartItemSchema = new mongoose.Schema({
     default: 1, 
     min: 1 
   },
+  // Name, initial, or colors to put on this bow (personalizable bows only). Same bow + different text = separate lines.
+  personalization: { type: String, default: "", maxlength: 40, trim: true },
 });
 
 // -------------------------

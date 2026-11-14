@@ -34,6 +34,7 @@ import api from "./api/axios.config";
 import { AuthContext } from "./context/AuthContext";
 import { useSiteSettings } from "./context/SiteSettingsContext";
 import { consumeStoredOAuthResult, hasOAuthParams } from "./auth/oauthState";
+import { cartLineKey, linePrice } from "./config/shop";
 import {
   initializeAnalytics,
   trackAddToCart,
@@ -50,6 +51,10 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  // Links from cart-reminder emails end in ?cart=open: show the cart they left.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("cart") === "open") setShowCart(true);
+  }, [location.search]);
   const [showLogin, setShowLogin] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [oauthMessage, setOauthMessage] = useState("");
@@ -191,28 +196,30 @@ export default function App() {
   }, [location.pathname, location.search]);
 
   // ───────────────── Cart handlers
-  const addToCart = useCallback((product, qty = 1) => {
+  const addToCart = useCallback((product, qty = 1, personalization = "") => {
     trackAddToCart(product, qty);
+    const text = product.personalizable ? String(personalization || "").trim().slice(0, 40) : "";
+    const key = cartLineKey({ productId: product, personalization: text });
     setCart((prev) => {
-      const exists = prev.find((i) => i.productId._id === product._id);
+      const exists = prev.find((i) => cartLineKey(i) === key);
       if (exists) {
         return prev.map((i) =>
-          i.productId._id === product._id
+          cartLineKey(i) === key
             ? { ...i, quantity: i.quantity + qty }
             : i,
         );
       }
-      return [...prev, { productId: product, quantity: qty }];
+      return [...prev, { productId: product, quantity: qty, personalization: text }];
     });
   }, []);
 
   const removeItem = useCallback((id) => {
     setCart((prev) => {
-      const itemToRemove = prev.find((i) => i.productId._id === id);
+      const itemToRemove = prev.find((i) => cartLineKey(i) === id);
       if (itemToRemove) {
         trackRemoveFromCart(itemToRemove);
       }
-      return prev.filter((i) => i.productId._id !== id);
+      return prev.filter((i) => cartLineKey(i) !== id);
     });
   }, []);
 
@@ -224,7 +231,7 @@ export default function App() {
       }
       setCart((prev) =>
         prev.map((i) =>
-          i.productId._id === id ? { ...i, quantity: newQty } : i,
+          cartLineKey(i) === id ? { ...i, quantity: newQty } : i,
         ),
       );
     },
@@ -302,7 +309,7 @@ export default function App() {
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const cartTotal = cart.reduce(
-    (sum, item) => sum + Number(item.productId?.price || 0) * item.quantity,
+    (sum, item) => sum + linePrice(item) * item.quantity,
     0,
   );
   const cartItemCount = cart.reduce((sum, i) => sum + i.quantity, 0);
