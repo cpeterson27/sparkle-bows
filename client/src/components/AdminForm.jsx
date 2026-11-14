@@ -37,6 +37,7 @@ const initialForm = {
   materialCost: "",
   madeToOrderDays: String(DEFAULT_MADE_TO_ORDER_DAYS),
   bundleEligible: true,
+  personalizable: false,
   occasions: [],
   category: "",
   description: "",
@@ -323,6 +324,7 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         materialCost: productToEdit.materialCost ?? "",
         madeToOrderDays: String(productToEdit.madeToOrderDays ?? DEFAULT_MADE_TO_ORDER_DAYS),
         bundleEligible: productToEdit.bundleEligible !== false,
+        personalizable: !!productToEdit.personalizable,
         occasions: Array.isArray(productToEdit.occasions) ? productToEdit.occasions : [],
         category: productToEdit.category || "",
         description: productToEdit.description || "",
@@ -374,6 +376,7 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
         materialCost: parseFloat(form.materialCost),
         madeToOrderDays: parseInt(form.madeToOrderDays, 10),
         bundleEligible: form.bundleEligible,
+        personalizable: form.personalizable,
         occasions: form.occasions,
         category: form.category,
         description: form.description.trim(),
@@ -576,6 +579,10 @@ export default function AdminForm({ productToEdit, onSuccess, onCancel }) {
               <label className="mt-5 flex items-center gap-2 text-sm text-gray-700">
                 <input type="checkbox" name="bundleEligible" checked={form.bundleEligible} onChange={handleChange} />
                 Counts toward the bundle deal (turn off for premium or custom bows)
+              </label>
+              <label className="mt-3 flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="personalizable" checked={form.personalizable} onChange={handleChange} />
+                Customers can personalize it (name, initial, or colors) for +$3
               </label>
             </SectionCard>
           </>

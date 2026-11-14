@@ -21,3 +21,12 @@ describe("any 3 for $25 bundle", () => {
     expect(lines.reduce((sum, line) => sum + line.amount, 0)).toBe(2500);
   });
 });
+
+describe("personalization", () => {
+  const { cleanPersonalization } = require("../utils/bundlePricing");
+  test("kept only on personalizable bows, trimmed to 40 characters", () => {
+    expect(cleanPersonalization("  Emma  ", { personalizable: true })).toBe("Emma");
+    expect(cleanPersonalization("Emma", { personalizable: false })).toBe("");
+    expect(cleanPersonalization("x".repeat(60), { personalizable: true })).toHaveLength(40);
+  });
+});

@@ -3,6 +3,11 @@
 export const BUNDLE = { size: 3, price: 25 };
 export const FREE_SHIPPING_THRESHOLD = 35;
 export const DEFAULT_MADE_TO_ORDER_DAYS = 7;
+export const PERSONALIZATION_FEE = 3;
+
+// A cart line is one bow + one personalization (the same bow with two names is two lines).
+export const cartLineKey = (item) => `${item?.productId?._id || item?.productId}|${item?.personalization || ""}`;
+export const linePrice = (item) => Number(item?.productId?.price || 0) + (item?.personalization && item?.productId?.personalizable ? PERSONALIZATION_FEE : 0);
 
 // Christmas order-by date (orders placed by the end of this day arrive before Christmas).
 export const HOLIDAY_ORDER_BY = "2026-12-12";

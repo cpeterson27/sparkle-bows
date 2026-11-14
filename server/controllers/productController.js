@@ -79,6 +79,7 @@ exports.createProduct = async (req, res) => {
       occasions,
       madeToOrderDays,
       bundleEligible,
+      personalizable,
     } = req.body;
 
     // Price validation
@@ -106,6 +107,7 @@ exports.createProduct = async (req, res) => {
       occasions: cleanOccasions(occasions) ?? [],
       madeToOrderDays: madeToOrderDays ?? 7,
       bundleEligible: bundleEligible ?? true,
+      personalizable: personalizable ?? false,
       featured: featured ?? false,
       bestseller: bestseller ?? false,
       newArrival: newArrival ?? false,
@@ -145,6 +147,7 @@ exports.updateProduct = async (req, res) => {
       occasions,
       madeToOrderDays,
       bundleEligible,
+      personalizable,
     } = req.body;
 
     // Price validation (if provided)
@@ -179,6 +182,7 @@ exports.updateProduct = async (req, res) => {
     if (occasions !== undefined) product.occasions = cleanOccasions(occasions);
     if (madeToOrderDays !== undefined) product.madeToOrderDays = madeToOrderDays;
     if (bundleEligible !== undefined) product.bundleEligible = bundleEligible;
+    if (personalizable !== undefined) product.personalizable = personalizable;
     product.materialCost = materialCost ?? product.materialCost;
     product.profitPerUnit =
       (product.price ?? 0) - (product.materialCost ?? 0);

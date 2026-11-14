@@ -379,6 +379,27 @@ export default function HomePage({ addToCart }) {
           </div>
         </section>
 
+        {/* MEET THE MAKER (filled in from admin Site Settings) */}
+        {settings.makerStory ? (
+          <section className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
+            <div className="grid items-center gap-8 rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm md:grid-cols-[220px_1fr]">
+              {settings.makerPhoto ? (
+                <img src={settings.makerPhoto} alt={settings.makerName ? `${settings.makerName}, the maker` : "The maker"} className="aspect-square w-full max-w-[220px] rounded-[28px] object-cover" />
+              ) : null}
+              <div className={settings.makerPhoto ? "" : "md:col-span-2"}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">Meet the maker</p>
+                {settings.makerName ? <h2 className="brand-serif mt-3 text-3xl text-slate-950">{settings.makerName}</h2> : null}
+                <p className="mt-4 whitespace-pre-line text-base leading-8 text-slate-600">{settings.makerStory}</p>
+                <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
+                  {settings.instagramUrl ? <a href={settings.instagramUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">Instagram</a> : null}
+                  {settings.tiktokUrl ? <a href={settings.tiktokUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">TikTok</a> : null}
+                  {settings.facebookUrl ? <a href={settings.facebookUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">Facebook</a> : null}
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         {/* FULL SHOP */}
         <section
           id="shop-section"

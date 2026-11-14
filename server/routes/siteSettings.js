@@ -15,6 +15,12 @@ function toPublicPayload(settings) {
     organizationName: settings.organizationName,
     googleAnalyticsId: settings.googleAnalyticsId,
     googleTagManagerId: settings.googleTagManagerId,
+    makerName: settings.makerName || "",
+    makerStory: settings.makerStory || "",
+    makerPhoto: settings.makerPhoto || "",
+    instagramUrl: settings.instagramUrl || "",
+    tiktokUrl: settings.tiktokUrl || "",
+    facebookUrl: settings.facebookUrl || "",
   };
 }
 
@@ -52,6 +58,12 @@ router.put("/", verifyToken, verifyAdmin, async (req, res) => {
       "organizationName",
       "googleAnalyticsId",
       "googleTagManagerId",
+      "makerName",
+      "makerStory",
+      "makerPhoto",
+      "instagramUrl",
+      "tiktokUrl",
+      "facebookUrl",
     ];
 
     fields.forEach((field) => {

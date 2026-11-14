@@ -57,6 +57,8 @@ const productSchema = new Schema({
   madeToOrderDays: { type: Number, default: 7, min: 1, max: 60 },
   // Counts toward the "any N for $X" bundle deal (turn off for premium or custom bows).
   bundleEligible: { type: Boolean, default: true },
+  // Customers can add a name, initial, or colors for PERSONALIZATION_FEE (default $3).
+  personalizable: { type: Boolean, default: false },
 
   // Kept for older records; made-to-order bows don't use stock counts.
   inventory: { type: Number, default: 0 },

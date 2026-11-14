@@ -18,7 +18,7 @@ import StripeCheckoutForm from "./StripeCheckoutForm";
 import ConfirmModal from "./ConfirmModal";
 import api from "../api/axios.config";
 import { trackBeginCheckout } from "../lib/analytics";
-import { BUNDLE, FREE_SHIPPING_THRESHOLD, bundleSavings } from "../config/shop";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, bundleSavings, cartLineKey, linePrice } from "../config/shop";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const DEFAULT_SHIPPING_POLICY =
@@ -99,7 +99,7 @@ export default function CartSidebar({
   const cartRateSignature = useMemo(
     () =>
       validCartItems
-        .map((item) => `${item.productId._id}:${item.quantity}`)
+        .map((item) => `${cartLineKey(item)}:${item.quantity}`)
         .sort()
         .join("|"),
     [validCartItems],
@@ -726,7 +726,7 @@ export default function CartSidebar({
               <div className="space-y-4">
                 {validCartItems.map((item) => (
                   <article
-                    key={item.productId._id}
+                    key={cartLineKey(item)}
                     className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm"
                   >
                     <div className="flex gap-4">
@@ -744,15 +744,20 @@ export default function CartSidebar({
                             <h3 className="mt-1 font-semibold text-slate-950">
                               {item.productId.name}
                             </h3>
+                            {item.personalization ? (
+                              <p className="mt-1 text-xs font-medium text-rose-600">
+                                Personalized: “{item.personalization}”
+                              </p>
+                            ) : null}
                             <p className="mt-2 text-sm font-medium text-slate-600">
-                              ${Number(item.productId.price || 0).toFixed(2)} each
+                              ${linePrice(item).toFixed(2)} each
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() =>
                               setItemToRemove({
-                                id: item.productId._id,
+                                id: cartLineKey(item),
                                 name: item.productId.name,
                               })
                             }
@@ -767,7 +772,7 @@ export default function CartSidebar({
                             <button
                               type="button"
                               onClick={() =>
-                                onUpdateQuantity(item.productId._id, item.quantity - 1)
+                                onUpdateQuantity(cartLineKey(item), item.quantity - 1)
                               }
                               className="rounded-full p-2 text-slate-700 transition hover:bg-white"
                             >
@@ -779,7 +784,7 @@ export default function CartSidebar({
                             <button
                               type="button"
                               onClick={() =>
-                                onUpdateQuantity(item.productId._id, item.quantity + 1)
+                                onUpdateQuantity(cartLineKey(item), item.quantity + 1)
                               }
                               className="rounded-full p-2 text-slate-700 transition hover:bg-white"
                             >

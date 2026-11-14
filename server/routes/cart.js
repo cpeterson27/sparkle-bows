@@ -1,4 +1,5 @@
 const express = require("express");
+const { PERSONALIZATION_FEE } = require("../utils/bundlePricing");
 const Cart = require("../models/cartModel");
 const { optionalAuth } = require("../middleware/auth");
 const { calculateShipping } = require("../utils/shippingCalculator");
@@ -27,13 +28,19 @@ const guestCookieOptions = {
 function normalizeIncomingItems(items) {
   if (!Array.isArray(items)) return [];
 
-  return items.filter(
-    (item) =>
-      item &&
-      item.productId &&
-      typeof item.quantity === "number" &&
-      item.quantity > 0,
-  );
+  return items
+    .filter(
+      (item) =>
+        item &&
+        item.productId &&
+        typeof item.quantity === "number" &&
+        item.quantity > 0,
+    )
+    .map((item) => ({
+      productId: item.productId?._id || item.productId,
+      quantity: item.quantity,
+      personalization: String(item.personalization || "").replace(/\s+/g, " ").trim().slice(0, 40),
+    }));
 }
 
 async function sanitizeCartDocument(cart) {
@@ -96,8 +103,7 @@ router.get("/", optionalAuth, async (req, res) => {
     // ------------------------
     const itemsWithData = cart.items.map((item) => ({
       ...item.toObject(),
-      price: item.productId?.price || 0,
-      inventory: item.productId?.inventory || 0,
+      price: (item.productId?.price || 0) + (item.personalization && item.productId?.personalizable ? PERSONALIZATION_FEE : 0),
     }));
 
     const subtotal = itemsWithData.reduce(
@@ -155,8 +161,7 @@ router.put("/", optionalAuth, async (req, res) => {
     // ------------------------
     const itemsWithData = updatedCart.items.map((item) => ({
       ...item.toObject(),
-      price: item.productId?.price || 0,
-      inventory: item.productId?.inventory || 0,
+      price: (item.productId?.price || 0) + (item.personalization && item.productId?.personalizable ? PERSONALIZATION_FEE : 0),
     }));
 
     const subtotal = itemsWithData.reduce(

@@ -88,6 +88,7 @@ app.use(morganMiddleware);
 // ------------------------
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/feeds", require("./routes/feeds"));
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/uploads", require("./routes/upload"));
 app.use("/api/cart", require("./routes/cart"));

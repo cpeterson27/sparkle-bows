@@ -21,6 +21,12 @@ const initialState = {
   defaultOgImage: "",
   googleAnalyticsId: "",
   googleTagManagerId: "",
+  makerName: "",
+  makerStory: "",
+  makerPhoto: "",
+  instagramUrl: "",
+  tiktokUrl: "",
+  facebookUrl: "",
 };
 
 function Section({ icon: Icon, title, subtitle, children }) {
@@ -211,6 +217,31 @@ export default function SiteSettingsForm() {
             value={form.googleTagManagerId}
             onChange={handleChange}
           />
+        </Field>
+      </Section>
+
+      <Section
+        icon={BarChart3}
+        title="Meet the Maker & Social Links"
+        subtitle="Shown on the homepage once the story is filled in. Share only what you're comfortable sharing."
+      >
+        <Field label="Maker name" hint="e.g. a first name, or 'Mom & daughter team'">
+          <input className={inputClassName} name="makerName" value={form.makerName} onChange={handleChange} />
+        </Field>
+        <Field label="Maker story" hint="A few sentences: who makes the bows and why.">
+          <textarea className={inputClassName} rows={4} name="makerStory" value={form.makerStory} onChange={handleChange} />
+        </Field>
+        <Field label="Maker photo URL" hint="Optional. Upload to Cloudinary and paste the link.">
+          <input className={inputClassName} name="makerPhoto" value={form.makerPhoto} onChange={handleChange} />
+        </Field>
+        <Field label="Instagram URL">
+          <input className={inputClassName} name="instagramUrl" value={form.instagramUrl} onChange={handleChange} />
+        </Field>
+        <Field label="TikTok URL">
+          <input className={inputClassName} name="tiktokUrl" value={form.tiktokUrl} onChange={handleChange} />
+        </Field>
+        <Field label="Facebook URL">
+          <input className={inputClassName} name="facebookUrl" value={form.facebookUrl} onChange={handleChange} />
         </Field>
       </Section>
 

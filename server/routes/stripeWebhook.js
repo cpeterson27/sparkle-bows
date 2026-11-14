@@ -1,4 +1,5 @@
 // backend/routes/stripeWebhook.js - PRODUCTION VERSION
+const { trackPlacedOrder } = require("../services/klaviyoEvents");
 const express = require("express");
 const router = express.Router();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -122,6 +123,9 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
         });
 
         // -------------------------
+        // Tell Klaviyo the order went through, so the abandoned-cart email skips this customer.
+        trackPlacedOrder({ email: order.customerEmail, name: order.customerName, orderId: order._id, items: order.items, total: order.total }).catch(() => {});
+
         // 6. UPDATE PRODUCT INVENTORY
         // -------------------------
         for (const item of order.items) {
