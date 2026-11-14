@@ -17,6 +17,12 @@ export function holidayDeadline(now = new Date()) {
   return { open: msLeft > 0, daysLeft: Math.max(0, Math.ceil(msLeft / 86400000)), label: end.toLocaleDateString("en-US", { month: "long", day: "numeric" }) };
 }
 
+// Christmas look (snow, lights, holiday wording) runs from November 1 through December 26.
+export function isChristmasSeason(now = new Date()) {
+  const month = now.getMonth(), day = now.getDate();
+  return month === 10 || (month === 11 && day <= 26);
+}
+
 export const OCCASIONS = [
   { id: "christmas", label: "Christmas" },
   { id: "valentines", label: "Valentine's Day" },

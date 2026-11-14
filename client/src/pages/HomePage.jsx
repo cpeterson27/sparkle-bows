@@ -14,7 +14,8 @@ import VipSignupSection from "../components/VipSignupSection";
 import Seo from "../components/Seo";
 import api from "../api/axios.config";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { BUNDLE, FREE_SHIPPING_THRESHOLD, OCCASIONS, holidayDeadline } from "../config/shop";
+import { BUNDLE, FREE_SHIPPING_THRESHOLD, OCCASIONS, holidayDeadline, isChristmasSeason } from "../config/shop";
+import { Snowfall, StringLights } from "../components/ChristmasEffects";
 
 function FadeIn({ children, delay = 0 }) {
   const ref = useRef(null);
@@ -118,6 +119,7 @@ export default function HomePage({ addToCart }) {
       : (allProducts || []).slice(0, 4);
 
   const holiday = holidayDeadline();
+  const festive = isChristmasSeason();
 
   const scrollToShop = () =>
     document
@@ -151,76 +153,99 @@ export default function HomePage({ addToCart }) {
         {holiday.open && (
           <Link
             to="/collections/christmas"
-            className="block bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-rose-700"
+            className="holiday-shimmer block bg-gradient-to-r from-rose-700 via-rose-500 to-rose-700 px-4 py-3 text-center text-sm font-semibold text-white transition hover:brightness-110"
           >
             🎄 Order by {holiday.label} for Christmas delivery
             {holiday.daysLeft <= 14 ? ` · only ${holiday.daysLeft} day${holiday.daysLeft === 1 ? "" : "s"} left` : ""} · Shop Christmas bows →
           </Link>
         )}
 
-        {/* HERO */}
-        <section className="relative overflow-hidden border-b border-slate-200 bg-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.16),_transparent_26%)]" />
-          <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+        {/* HERO: Christmas scene (snow + lights) in season, calm everyday look the rest of the year */}
+        <section
+          className={`relative overflow-hidden border-b ${
+            festive
+              ? "border-emerald-950 bg-gradient-to-br from-[#0f2e22] via-[#123a2b] to-[#4a0f1f] text-white"
+              : "border-slate-200 bg-white"
+          }`}
+        >
+          {festive ? (
+            <>
+              <StringLights />
+              <Snowfall />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(250,204,21,0.14),_transparent_35%),radial-gradient(circle_at_85%_80%,_rgba(244,63,94,0.22),_transparent_40%)]" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.16),_transparent_26%)]" />
+          )}
+          <div className="relative z-[3] mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-24 lg:pt-24">
             <FadeIn>
               <div className="max-w-2xl">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
-                  Handmade · made to order
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${festive ? "text-amber-300" : "text-rose-500"}`}>
+                  {festive ? "The Christmas shop is open" : "Tied by hand, one order at a time"}
                 </p>
-                <h1 className="brand-serif mt-6 text-5xl leading-tight text-slate-950 sm:text-6xl">
-                  Sparkly handmade bows, made just for her.
+                <h1 className={`brand-serif mt-6 text-5xl leading-tight sm:text-6xl ${festive ? "text-white" : "text-slate-950"}`}>
+                  {festive ? "Little bows for big Christmas moments." : "Little bows for every big moment."}
                 </h1>
-                <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
-                  Every bow is made by hand when you order it, ready for photos,
-                  parties, and gifts. Any {BUNDLE.size} bows for ${BUNDLE.price}, and
-                  free U.S. shipping on orders over ${FREE_SHIPPING_THRESHOLD}.
+                <p className={`mt-6 max-w-xl text-base leading-8 ${festive ? "text-emerald-50/90" : "text-slate-600"}`}>
+                  {festive
+                    ? "Cranberry velvet, candy-cane stripes, and snowy sparkle, each one tied after you order."
+                    : "Glitter, plaid, and classic grosgrain, each one tied after you order."}{" "}
+                  Mix any {BUNDLE.size} for ${BUNDLE.price}, and shipping's free over ${FREE_SHIPPING_THRESHOLD}.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-4">
-                  <button
-                    type="button"
-                    onClick={scrollToShop}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600"
-                  >
-                    Shop collection
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                  {festive ? (
+                    <Link
+                      to="/collections/christmas"
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 px-6 py-3.5 text-sm font-semibold text-emerald-950 shadow-lg shadow-amber-500/20 transition hover:brightness-105 holiday-shimmer"
+                    >
+                      Shop Christmas bows
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={scrollToShop}
+                      className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600"
+                    >
+                      Shop the bows
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedCategory("bestseller");
                       scrollToShop();
                     }}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-slate-950"
+                    className={`inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${
+                      festive
+                        ? "border border-white/30 bg-white/10 text-white hover:bg-white/20"
+                        : "border border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-slate-950"
+                    }`}
                   >
-                    View best sellers
+                    {festive ? "Find a stocking stuffer" : "See favorites"}
                   </button>
                 </div>
 
                 <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                  {[
-                    {
-                      value: "Gift-ready",
-                      label: "Presentation that feels premium",
-                    },
-                    {
-                      value: "Small batch",
-                      label: "Crafted with close quality control",
-                    },
-                    {
-                      value: "Growth-ready",
-                      label: "Built to support real operations",
-                    },
-                  ].map((item) => (
+                  {(festive
+                    ? [
+                        { value: "Stocking-ready", label: "Clipped to a card and ready to wrap" },
+                        { value: "Tied to order", label: "Made for you, never pulled from a bin" },
+                        { value: `${BUNDLE.size} for $${BUNDLE.price}`, label: "Mix colors and styles any way you like" },
+                      ]
+                    : [
+                        { value: "Gift-ready", label: "Clipped to a card and ready to wrap" },
+                        { value: "Tied to order", label: "Made for you, never pulled from a bin" },
+                        { value: `${BUNDLE.size} for $${BUNDLE.price}`, label: "Mix colors and styles any way you like" },
+                      ]
+                  ).map((item) => (
                     <div
                       key={item.value}
-                      className="rounded-[28px] border border-slate-200 bg-[#fcfaf7] p-5"
+                      className={`rounded-[28px] p-5 ${festive ? "border border-white/15 bg-white/10 backdrop-blur" : "border border-slate-200 bg-[#fcfaf7]"}`}
                     >
-                      <p className="text-lg font-semibold text-slate-950">
-                        {item.value}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-slate-500">
-                        {item.label}
-                      </p>
+                      <p className={`text-lg font-semibold ${festive ? "text-white" : "text-slate-950"}`}>{item.value}</p>
+                      <p className={`mt-2 text-sm leading-6 ${festive ? "text-emerald-50/80" : "text-slate-500"}`}>{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -228,43 +253,43 @@ export default function HomePage({ addToCart }) {
             </FadeIn>
 
             <FadeIn delay={120}>
-              <div className="relative">
-                <div className="rounded-[40px] border border-slate-200 bg-gradient-to-br from-rose-100 via-white to-amber-100 p-6 shadow-sm">
+              <div className={`relative ${festive ? "float-gentle" : ""}`}>
+                <div className={`rounded-[40px] p-6 shadow-sm ${festive ? "border border-white/15 bg-gradient-to-br from-rose-200/30 via-white/10 to-amber-200/30" : "border border-slate-200 bg-gradient-to-br from-rose-100 via-white to-amber-100"}`}>
                   <div className="rounded-[34px] bg-white p-6 shadow-sm">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-[28px] bg-slate-950 p-6 text-white">
+                      <div className={`rounded-[28px] p-6 text-white ${festive ? "bg-gradient-to-br from-rose-700 to-rose-900" : "bg-slate-950"}`}>
                         <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">
-                          Signature
+                          {festive ? "Made for the photo" : "Picture ready"}
                         </p>
                         <h2 className="brand-serif mt-3 text-3xl">
-                          Bows that look elevated in every photo.
+                          {festive ? "Front-row bows for the Christmas card." : "The finishing touch for every outfit."}
                         </h2>
-                        <p className="mt-4 text-sm leading-7 text-slate-300">
-                          Designed for birthdays, family photos, holiday
-                          outfits, and polished everyday wear.
+                        <p className="mt-4 text-sm leading-7 text-rose-100">
+                          {festive
+                            ? "Matching sisters, school parties, Santa visits, and Christmas morning."
+                            : "Birthdays, picture day, recitals, and ordinary Tuesdays."}
                         </p>
                       </div>
                       <div className="space-y-4">
                         <div className="rounded-[28px] bg-[#fcfaf7] p-5">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                            Why families return
+                            Why parents come back
                           </p>
                           <div className="mt-4 space-y-3 text-sm text-slate-600">
-                            <p>Secure clips and polished finishing</p>
-                            <p>Soft materials selected with comfort in mind</p>
-                            <p>Presentation that feels ready to gift</p>
+                            <p>Clips that stay put through recess</p>
+                            <p>Soft ribbon that won't scratch</p>
+                            <p>Packed like a present</p>
                           </div>
                         </div>
-                        <div className="rounded-[28px] border border-rose-100 bg-rose-50 p-5">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
-                            Built for growth
+                        <Link to="/team-orders" className="block rounded-[28px] border border-emerald-100 bg-emerald-50 p-5 transition hover:border-emerald-300">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                            {festive ? "Whole team in red and green?" : "Ordering for a group?"}
                           </p>
                           <p className="mt-3 text-sm leading-7 text-slate-600">
-                            A more professional storefront builds confidence,
-                            raises perceived value, and helps support repeat
-                            orders as the brand grows.
+                            Cheer squads, dance classes, and choirs get matching sets.
+                            Ask about team pricing →
                           </p>
-                        </div>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -275,17 +300,17 @@ export default function HomePage({ addToCart }) {
         </section>
 
         {/* TRUST BAR */}
-        <section className="border-b border-slate-200 bg-slate-950 text-white">
+        <section className={`border-b text-white ${festive ? "border-rose-950 bg-[#5c1426]" : "border-slate-200 bg-slate-950"}`}>
           <div className="mx-auto grid max-w-7xl gap-4 px-4 py-5 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
             {[
-              { icon: ShieldCheck, text: "Handmade quality control" },
-              { icon: Truck, text: "Fast, dependable fulfillment" },
-              { icon: PackageCheck, text: "Gift-worthy packaging" },
-              { icon: CheckCircle2, text: "Designed for repeat customers" },
+              { icon: ShieldCheck, text: "Tied by hand in small batches" },
+              { icon: Truck, text: "Ships in about a week" },
+              { icon: PackageCheck, text: "Wrapped and ready to give" },
+              { icon: CheckCircle2, text: "Real replies from a real family" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
-                <Icon className="h-4 w-4 text-rose-300" />
-                <span className="text-slate-200">{text}</span>
+                <Icon className={`h-4 w-4 ${festive ? "text-amber-300" : "text-rose-300"}`} />
+                <span className="text-slate-100">{text}</span>
               </div>
             ))}
           </div>
@@ -412,11 +437,11 @@ export default function HomePage({ addToCart }) {
                   Full collection
                 </p>
                 <h2 className="brand-serif mt-4 text-4xl text-slate-950">
-                  Every bow, all in one place.
+                  Every style, every color.
                 </h2>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
-                  Handmade in small batches. Each style is crafted with boutique
-                  quality and gift-worthy presentation.
+                  Filter by occasion or scroll and pick favorites. Each one is
+                  tied after you order it.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -526,11 +551,12 @@ export default function HomePage({ addToCart }) {
               Ready to shop
             </p>
             <h2 className="brand-serif mt-5 text-5xl text-slate-950">
-              Handmade bows that look and feel like a real boutique.
+              {festive ? "Ready to wrap something sparkly?" : "Ready to find her new favorite?"}
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-slate-500">
-              Every bow is made by hand with careful attention to quality,
-              presentation, and the details that make a gift feel special.
+              {festive
+                ? `Pick a few favorites by ${holiday.label}, and we'll tie them, pack them, and send them your way before Christmas.`
+                : "Pick a few favorites, and we'll tie them, pack them, and send them your way."}
             </p>
             <button
               type="button"
