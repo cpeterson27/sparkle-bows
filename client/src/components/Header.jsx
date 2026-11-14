@@ -3,216 +3,98 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ShoppingBag, User } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import { BUNDLE, FREE_SHIPPING_THRESHOLD, isChristmasSeason } from "../config/shop";
+import { SparkleIcon } from "./ChristmasEffects";
 
-function NavButton({ children, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-sm font-medium text-slate-600 transition hover:text-slate-950"
-    >
-      {children}
-    </button>
-  );
-}
+const navClass = ({ isActive }) =>
+  `rounded-full px-4 py-2 text-[15px] font-semibold transition ${
+    isActive ? "bg-candy-100 text-candy-700" : "text-royal-900 hover:bg-royal-100 hover:text-royal-700"
+  }`;
 
-export default function Header({
-  cartItemCount,
-  onShowLogin,
-  onShowCart,
-  onShowContact,
-}) {
+export default function Header({ cartItemCount, onShowLogin, onShowCart, onShowContact }) {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const festive = isChristmasSeason();
 
   const scrollToShop = () => {
+    const go = () => document.getElementById("shop-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (location.pathname !== "/") {
       navigate("/");
-      window.setTimeout(() => {
-        document
-          .getElementById("shop-section")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 120);
+      window.setTimeout(go, 150);
       return;
     }
-
-    document
-      .getElementById("shop-section")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    go();
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
-      {/* One short line so the header keeps the same height on phones (a taller header covered the page below). */}
-      <div
-        className={`border-b text-[11px] font-medium uppercase tracking-[0.18em] ${
-          festive
-            ? "border-emerald-900 bg-[#0f2e22] text-amber-200"
-            : "border-slate-100 bg-slate-950 text-rose-100"
-        }`}
-      >
-        <div className="mx-auto max-w-7xl truncate px-4 py-2 text-center sm:px-6 lg:px-8">
-          {festive
-            ? `✨ ${BUNDLE.size} for $${BUNDLE.price} · free shipping over $${FREE_SHIPPING_THRESHOLD}`
-            : `Tied by hand · ${BUNDLE.size} for $${BUNDLE.price}`}
+    <header className="fixed inset-x-0 top-0 z-50 shadow-[0_6px_30px_-12px_rgba(91,33,182,0.35)]">
+      {/* One short line so the header keeps the same height on phones. */}
+      <div className="bg-gradient-to-r from-royal-900 via-royal-700 to-candy-600 text-[12px] font-bold tracking-wide text-gold-200">
+        <div className="mx-auto max-w-7xl truncate px-4 py-2 text-center">
+          {festive ? "🎄 " : "✨ "}
+          {BUNDLE.size} bows for ${BUNDLE.price} · free shipping over ${FREE_SHIPPING_THRESHOLD}
+          {festive ? " · order by Dec 12 for Christmas ✨" : ""}
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="group flex items-center gap-4"
-        >
-          <img
-            src="/favicon.ico"
-            alt="Sparkle Bows Logo"
-            className="h-11 w-11 rounded-2xl object-contain"
-          />
-          <div className="text-left">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-rose-500">
-              Sparkle Bows
-            </p>
-            <p className="hidden font-serif text-xl text-slate-950 transition group-hover:text-rose-600 sm:block">
-              Boutique Hair Accessories
-            </p>
-          </div>
-        </button>
-
-        <nav className="hidden items-center gap-8 lg:flex">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `text-sm font-medium transition ${
-                isActive
-                  ? "text-slate-950"
-                  : "text-slate-600 hover:text-slate-950"
-              }`
-            }
-          >
-            Home
-          </NavLink>
-          <NavButton onClick={scrollToShop}>Shop</NavButton>
-          <NavLink
-            to="/collections/christmas"
-            className={({ isActive }) =>
-              `text-sm font-medium transition ${
-                isActive
-                  ? "text-rose-700"
-                  : "text-rose-600 hover:text-rose-700"
-              }`
-            }
-          >
-            Christmas
-          </NavLink>
-          <NavLink
-            to="/team-orders"
-            className={({ isActive }) =>
-              `text-sm font-medium transition ${
-                isActive
-                  ? "text-slate-950"
-                  : "text-slate-600 hover:text-slate-950"
-              }`
-            }
-          >
-            Team orders
-          </NavLink>
-          <NavLink
-            to="/collections/everyday"
-            className={({ isActive }) =>
-              `text-sm font-medium transition ${
-                isActive
-                  ? "text-slate-950"
-                  : "text-slate-600 hover:text-slate-950"
-              }`
-            }
-          >
-            Collections
-          </NavLink>
-          <NavButton onClick={onShowContact}>Contact</NavButton>
-          {user && (
-            <NavLink
-              to="/orders"
-              className={({ isActive }) =>
-                `text-sm font-medium transition ${
-                  isActive
-                    ? "text-slate-950"
-                    : "text-slate-600 hover:text-slate-950"
-                }`
-              }
-            >
-              Orders
-            </NavLink>
-          )}
-          {user && (
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `text-sm font-medium transition ${
-                  isActive
-                    ? "text-slate-950"
-                    : "text-slate-600 hover:text-slate-950"
-                }`
-              }
-            >
-              Account
-            </NavLink>
-          )}
-          {user?.role === "admin" && (
-            <NavLink
-              to="/admin/dashboard"
-              className={({ isActive }) =>
-                `inline-flex items-center gap-2 text-sm font-medium transition ${
-                  isActive
-                    ? "text-slate-950"
-                    : "text-slate-600 hover:text-slate-950"
-                }`
-              }
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </NavLink>
-          )}
-        </nav>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          {user ? (
-            <button
-              type="button"
-              onClick={() => navigate("/profile")}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-slate-950"
-              title="Profile"
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {user.name?.split(" ")[0] || "Account"}
-              </span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onShowLogin}
-              className="inline-flex items-center whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-slate-950"
-            >
-              Sign In
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onShowCart}
-            className="relative inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">Cart</span>
-            {cartItemCount > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-400 px-1.5 text-[10px] font-bold text-slate-950">
-                {cartItemCount > 99 ? "99+" : cartItemCount}
-              </span>
-            )}
+      <div className="border-b-4 border-candy-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+          <button type="button" onClick={() => navigate("/")} className="group flex items-center gap-3" aria-label="Sparkle Bows home">
+            <img src="/logo.svg" alt="" className="h-10 w-10 rounded-2xl sm:h-12 sm:w-12 shadow-md transition group-hover:rotate-[-6deg] group-hover:scale-105" />
+            <span className="relative">
+              <span className="whitespace-nowrap font-script text-[25px] font-bold leading-none text-candy-600 sm:text-[34px]">Sparkle Bows</span>
+              <SparkleIcon size={14} className="twinkle-star -right-4 -top-1 text-gold-400" />
+            </span>
           </button>
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            <NavLink to="/" end className={navClass}>Home</NavLink>
+            <button type="button" onClick={scrollToShop} className={navClass({ isActive: false })}>Shop</button>
+            <NavLink to="/collections/christmas" className={navClass}>🎄 Christmas</NavLink>
+            <NavLink to="/team-orders" className={navClass}>Team orders</NavLink>
+            <button type="button" onClick={onShowContact} className={navClass({ isActive: false })}>Contact</button>
+            {user && <NavLink to="/orders" className={navClass}>Orders</NavLink>}
+            {user?.role === "admin" && (
+              <NavLink to="/admin/dashboard" className={navClass}>
+                <span className="inline-flex items-center gap-1.5"><LayoutDashboard className="h-4 w-4" />Dashboard</span>
+              </NavLink>
+            )}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {user ? (
+              <button
+                type="button"
+                onClick={() => navigate("/profile")}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-royal-200 px-3 py-2 text-sm font-bold text-royal-800 transition hover:border-candy-300 hover:bg-candy-50"
+                title="Profile"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">{user.name?.split(" ")[0] || "Account"}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onShowLogin}
+                className="whitespace-nowrap rounded-full border-2 border-royal-200 px-4 py-2 text-sm font-bold text-royal-800 transition hover:border-candy-300 hover:bg-candy-50"
+              >
+                Sign in
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onShowCart}
+              className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-candy-500 to-royal-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-candy-500/30 transition hover:scale-105"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden sm:inline">Cart</span>
+              {cartItemCount > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-gold-300 px-1.5 text-[11px] font-extrabold text-royal-900 ring-2 ring-white">
+                  {cartItemCount > 99 ? "99+" : cartItemCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </header>

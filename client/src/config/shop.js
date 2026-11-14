@@ -23,13 +23,12 @@ export function isChristmasSeason(now = new Date()) {
   return month === 10 || (month === 11 && day <= 26);
 }
 
+// Kept to four so the shop is simple to browse (an 8-year-old runs it!). Valentine's / Back to School can return in season.
 export const OCCASIONS = [
-  { id: "christmas", label: "Christmas" },
-  { id: "valentines", label: "Valentine's Day" },
-  { id: "back-to-school", label: "Back to School" },
-  { id: "birthday", label: "Birthday" },
-  { id: "everyday", label: "Everyday" },
-  { id: "team-spirit", label: "Team Spirit" },
+  { id: "christmas", label: "Christmas", emoji: "🎄" },
+  { id: "birthday", label: "Birthday", emoji: "🎂" },
+  { id: "team-spirit", label: "Cheer & Team", emoji: "📣" },
+  { id: "everyday", label: "Everyday", emoji: "🌸" },
 ];
 
 export const STYLES = [

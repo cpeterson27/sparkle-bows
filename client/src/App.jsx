@@ -34,7 +34,8 @@ import api from "./api/axios.config";
 import { AuthContext } from "./context/AuthContext";
 import { useSiteSettings } from "./context/SiteSettingsContext";
 import { consumeStoredOAuthResult, hasOAuthParams } from "./auth/oauthState";
-import { cartLineKey, linePrice } from "./config/shop";
+import { cartLineKey, linePrice, isChristmasSeason } from "./config/shop";
+import { Snowfall, SparkleBurst } from "./components/ChristmasEffects";
 import {
   initializeAnalytics,
   trackAddToCart,
@@ -51,6 +52,11 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  // Opening a new page starts at the top (product pages used to open scrolled down to where you clicked).
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
+
   // Links from cart-reminder emails end in ?cart=open: show the cart they left.
   useEffect(() => {
     if (new URLSearchParams(location.search).get("cart") === "open") setShowCart(true);
@@ -315,7 +321,9 @@ export default function App() {
   const cartItemCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={isAdminRoute ? "min-h-screen bg-white" : "min-h-screen"}>
+      {!isAdminRoute && isChristmasSeason() ? <Snowfall count={26} className="snowfall--page" /> : null}
+      {!isAdminRoute ? <SparkleBurst /> : null}
       {!isAdminRoute && (
         <Header
           cartItemCount={cartItemCount}

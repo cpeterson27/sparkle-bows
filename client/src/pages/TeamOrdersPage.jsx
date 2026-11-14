@@ -55,22 +55,22 @@ export default function TeamOrdersPage() {
     }
   };
 
-  const input = "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
+  const input = "w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-3 text-sm text-royal-900 outline-none transition focus:border-candy-300 focus:ring-0";
 
   return (
-    <div className="bg-[#f7f3ee]">
+    <div >
       <Seo title="Team & Bulk Bow Orders" description="Custom bows in your team, studio, or school colors. Team pricing for 10 or more bows." type="website" />
-      <section className="border-b border-slate-200 bg-white">
+      <section className="bg-gradient-to-br from-royal-800 via-royal-700 to-candy-600 text-white">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">Teams · studios · schools · boutiques</p>
-          <h1 className="mt-4 font-serif text-4xl text-slate-950 sm:text-5xl">Bows for your whole team</h1>
-          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] font-extrabold text-gold-200">📣 Teams · studios · schools · boutiques</p>
+          <h1 className="mt-4 font-display text-4xl font-semibold text-white sm:text-5xl">Bows for your whole team</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-royal-100">
             Matching bows in your colors for cheer, dance, sports, school spirit, and parties. Every bow is made by hand
             to order. Ordering 10 or more? Tell us what you need and we'll send team pricing and a ready-by date.
           </p>
           {holiday.open && (
-            <p className="mt-4 inline-block rounded-full bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
-              Need them before Christmas? Send your request by {holiday.label}.
+            <p className="mt-4 inline-block rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-gold-200 ring-1 ring-white/25">
+              🎄 Need them before Christmas? Send your request by {holiday.label}.
             </p>
           )}
         </div>
@@ -84,22 +84,22 @@ export default function TeamOrdersPage() {
             <button type="button" onClick={() => setSent(false)} className="mt-4 text-sm font-semibold underline">Send another request</button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="grid gap-5 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-8">
+          <form onSubmit={handleSubmit} className="grid gap-5 rounded-[32px] bg-white ring-1 ring-royal-100 shadow-[0_20px_50px_-28px_rgba(91,33,182,0.45)] p-6 shadow-sm sm:grid-cols-2 sm:p-8">
             <input type="text" tabIndex="-1" autoComplete="off" aria-hidden="true" className="hidden"
               value={protection.website} onChange={(event) => setProtection((current) => ({ ...current, website: event.target.value }))} />
-            <div className="flex items-center gap-2 sm:col-span-2"><Users className="h-5 w-5 text-rose-500" /><h2 className="text-lg font-semibold text-slate-950">Request team pricing</h2></div>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Your name *</span><input id="team-name" className={input} value={form.name} onChange={set("name")} autoComplete="name" /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Email *</span><input id="team-email" type="email" className={input} value={form.email} onChange={set("email")} autoComplete="email" /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Team, studio, or school</span><input id="team-org" className={input} value={form.organization} onChange={set("organization")} placeholder="e.g. Lincoln Elementary PTA" /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Type of group</span>
+            <div className="flex items-center gap-2 sm:col-span-2"><Users className="h-5 w-5 text-candy-500" /><h2 className="text-lg font-semibold text-royal-950">Request team pricing</h2></div>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Your name *</span><input id="team-name" className={input} value={form.name} onChange={set("name")} autoComplete="name" /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Email *</span><input id="team-email" type="email" className={input} value={form.email} onChange={set("email")} autoComplete="email" /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Team, studio, or school</span><input id="team-org" className={input} value={form.organization} onChange={set("organization")} placeholder="e.g. Lincoln Elementary PTA" /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Type of group</span>
               <select id="team-type" className={input} value={form.groupType} onChange={set("groupType")}>{GROUP_TYPES.map((type) => <option key={type}>{type}</option>)}</select></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">About how many bows? *</span><input id="team-qty" type="number" min="1" className={input} value={form.quantity} onChange={set("quantity")} placeholder="e.g. 18" /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Colors</span><input id="team-colors" className={input} value={form.colors} onChange={set("colors")} placeholder="e.g. navy and gold" /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Needed by</span><input id="team-date" type="date" className={input} value={form.neededBy} onChange={set("neededBy")} /></label>
-            <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">Phone (optional)</span><input id="team-phone" type="tel" className={input} value={form.phone} onChange={set("phone")} autoComplete="tel" /></label>
-            <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-medium text-slate-700">Anything else? (style, logo, names, sizes)</span><textarea id="team-details" rows={4} className={input} value={form.details} onChange={set("details")} /></label>
-            {error && <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700 sm:col-span-2" role="alert">{error}</p>}
-            <button type="submit" disabled={sending} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:opacity-60 sm:col-span-2">
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">About how many bows? *</span><input id="team-qty" type="number" min="1" className={input} value={form.quantity} onChange={set("quantity")} placeholder="e.g. 18" /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Colors</span><input id="team-colors" className={input} value={form.colors} onChange={set("colors")} placeholder="e.g. navy and gold" /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Needed by</span><input id="team-date" type="date" className={input} value={form.neededBy} onChange={set("neededBy")} /></label>
+            <label className="block"><span className="mb-2 block text-sm font-medium text-royal-800">Phone (optional)</span><input id="team-phone" type="tel" className={input} value={form.phone} onChange={set("phone")} autoComplete="tel" /></label>
+            <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-medium text-royal-800">Anything else? (style, logo, names, sizes)</span><textarea id="team-details" rows={4} className={input} value={form.details} onChange={set("details")} /></label>
+            {error && <p className="rounded-2xl bg-candy-50 px-4 py-3 text-sm text-candy-700 sm:col-span-2" role="alert">{error}</p>}
+            <button type="submit" disabled={sending} className="inline-flex items-center justify-center gap-2 rounded-full bg-royal-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60 sm:col-span-2">
               <Send className="h-4 w-4" />{sending ? "Sending…" : "Send request"}
             </button>
           </form>

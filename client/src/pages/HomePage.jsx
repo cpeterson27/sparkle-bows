@@ -1,13 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight, Gift, Heart, Scissors, Truck } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
-import {
-  ArrowRight,
-  CheckCircle2,
-  PackageCheck,
-  ShieldCheck,
-  Truck,
-} from "lucide-react";
 import { useProducts } from "../hooks/use-products";
 import { ProductCard } from "../components/ProductCard";
 import VipSignupSection from "../components/VipSignupSection";
@@ -15,16 +9,15 @@ import Seo from "../components/Seo";
 import api from "../api/axios.config";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { BUNDLE, FREE_SHIPPING_THRESHOLD, OCCASIONS, holidayDeadline, isChristmasSeason } from "../config/shop";
-import { Snowfall, StringLights } from "../components/ChristmasEffects";
+import { Castle, SantaSleigh, Snowfall, SparkleIcon, StringLights, TwinklingStars } from "../components/ChristmasEffects";
 
-function FadeIn({ children, delay = 0 }) {
+function FadeIn({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const element = ref.current;
     if (!element) return undefined;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -34,14 +27,18 @@ function FadeIn({ children, delay = 0 }) {
       },
       { threshold: 0.12 },
     );
-
     observer.observe(element);
-    return () => observer.disconnect();
+    const fallback = window.setTimeout(() => setVisible(true), 1200);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return (
     <div
       ref={ref}
+      className={className}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(18px)",
@@ -53,36 +50,27 @@ function FadeIn({ children, delay = 0 }) {
   );
 }
 
-// Shop-by-occasion cards link to the occasion collections (see data/collections.js).
-const OCCASION_CARDS = [
-  {
-    slug: "christmas",
-    label: "Christmas bows",
-    description: "Red, green, plaid, and sparkle bows for Christmas photos, parties, and stockings.",
-    palette: "from-rose-100 via-white to-emerald-50",
-  },
-  {
-    slug: "team-spirit",
-    label: "Team & school colors",
-    description: "Cheer, dance, and game-day bows made in your colors. Team pricing available.",
-    palette: "from-sky-50 via-white to-amber-100",
-  },
-  {
-    slug: "birthday",
-    label: "Birthday bows",
-    description: "Party-ready sparkle for the birthday girl, or a gift she'll wear all year.",
-    palette: "from-amber-50 via-white to-rose-100",
-  },
-];
+function SectionTitle({ eyebrow, title, children }) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="inline-flex items-center gap-2 rounded-full bg-candy-100 px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-candy-600">
+        <SparkleIcon size={12} /> {eyebrow} <SparkleIcon size={12} />
+      </p>
+      <h2 className="mt-4 font-display text-4xl font-semibold text-royal-950 sm:text-5xl">{title}</h2>
+      {children ? <p className="mt-3 text-base leading-7 text-royal-700/80">{children}</p> : null}
+    </div>
+  );
+}
+
+const PRODUCT_GRID = "grid justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]";
 
 export default function HomePage({ addToCart }) {
   const { user } = useContext(AuthContext);
   const { settings } = useSiteSettings();
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selected, setSelected] = useState("all");
   const [featuredReviews, setFeaturedReviews] = useState([]);
   const { data: allProducts, isLoading } = useProducts({});
 
-  // Load real reviews from MongoDB
   useEffect(() => {
     api
       .get("/api/reviews/featured")
@@ -90,493 +78,252 @@ export default function HomePage({ addToCart }) {
       .catch(() => {});
   }, []);
 
-  const categories = [
-    { id: "all", label: "All bows" },
-    { id: "christmas", label: "Christmas" },
-    { id: "team-spirit", label: "Team spirit" },
-    { id: "birthday", label: "Birthday" },
-    { id: "everyday", label: "Everyday" },
-    { id: "bestseller", label: "Best sellers" },
-    { id: "new", label: "New arrivals" },
-  ];
-
-  const filteredProducts = (allProducts || []).filter((product) => {
-    if (selectedCategory === "all") return true;
-    if (selectedCategory === "new") return product.newArrival;
-    if (selectedCategory === "bestseller") return product.bestseller;
-    if (OCCASIONS.some((occasion) => occasion.id === selectedCategory)) {
-      return Array.isArray(product.occasions) && product.occasions.includes(selectedCategory);
-    }
-    return product.category === selectedCategory;
-  });
-
-  const featuredProducts = (allProducts || [])
-    .filter((product) => product.bestseller || product.featured)
-    .slice(0, 4);
-  const displayFeatured =
-    featuredProducts.length > 0
-      ? featuredProducts
-      : (allProducts || []).slice(0, 4);
+  const filters = [{ id: "all", label: "All bows", emoji: "✨" }, ...OCCASIONS];
+  const products = (allProducts || []).filter(
+    (product) => selected === "all" || (Array.isArray(product.occasions) && product.occasions.includes(selected)),
+  );
 
   const holiday = holidayDeadline();
   const festive = isChristmasSeason();
 
-  const scrollToShop = () =>
-    document
-      .getElementById("shop-section")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToShop = () => document.getElementById("shop-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
-    <div className="bg-[#f7f3ee] text-slate-950">
+    <div className="text-royal-950">
       <Seo
-        title="Boutique Handmade Hair Bows"
+        title="Sparkly Hair Bows Fit for a Princess"
         description={settings.defaultDescription}
         type="website"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Store",
           name: settings.organizationName || settings.siteName || "Sparkle Bows",
-          description:
-            settings.defaultDescription ||
-            "Premium handmade boutique hair bows with gift-worthy presentation and polished craftsmanship.",
+          description: settings.defaultDescription || "Sparkly hair bows fit for a princess, tied by hand to order.",
           url: settings.siteUrl || window.location.href,
         }}
       />
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap');
-        .brand-serif { font-family: 'Fraunces', serif; }
-        .brand-sans { font-family: 'Manrope', sans-serif; }
-      `}</style>
 
-      <div className="brand-sans">
-        {/* CHRISTMAS ORDER-BY BANNER */}
-        {holiday.open && (
-          <Link
-            to="/collections/christmas"
-            className="holiday-shimmer block bg-gradient-to-r from-rose-700 via-rose-500 to-rose-700 px-4 py-3 text-center text-sm font-semibold text-white transition hover:brightness-110"
-          >
-            🎄 Order by {holiday.label} for Christmas delivery
-            {holiday.daysLeft <= 14 ? ` · only ${holiday.daysLeft} day${holiday.daysLeft === 1 ? "" : "s"} left` : ""} · Shop Christmas bows →
-          </Link>
-        )}
+      {/* HERO: a night sky over a storybook castle, with Santa flying past in season */}
+      <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_#7e22ce_0%,_#3b0764_45%,_#1e0533_100%)] text-white">
+        {festive && <StringLights />}
+        <TwinklingStars count={34} />
+        <Snowfall count={36} />
+        {festive && <SantaSleigh />}
+        <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-candy-500/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 top-32 h-80 w-80 rounded-full bg-gold-300/20 blur-3xl" />
 
-        {/* HERO: Christmas scene (snow + lights) in season, calm everyday look the rest of the year */}
-        <section
-          className={`relative overflow-hidden border-b ${
-            festive
-              ? "border-emerald-950 bg-gradient-to-br from-[#0f2e22] via-[#123a2b] to-[#4a0f1f] text-white"
-              : "border-slate-200 bg-white"
-          }`}
-        >
-          {festive ? (
-            <>
-              <StringLights />
-              <Snowfall />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(250,204,21,0.14),_transparent_35%),radial-gradient(circle_at_85%_80%,_rgba(244,63,94,0.22),_transparent_40%)]" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.16),_transparent_26%)]" />
-          )}
-          <div className="relative z-[3] mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-24 lg:pt-24">
-            <FadeIn>
-              <div className="max-w-2xl">
-                <p className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${festive ? "text-amber-300" : "text-rose-500"}`}>
-                  {festive ? "The Christmas shop is open" : "Tied by hand, one order at a time"}
-                </p>
-                <h1 className={`brand-serif mt-6 text-5xl leading-tight sm:text-6xl ${festive ? "text-white" : "text-slate-950"}`}>
-                  {festive ? "Little bows for big Christmas moments." : "Little bows for every big moment."}
-                </h1>
-                <p className={`mt-6 max-w-xl text-base leading-8 ${festive ? "text-emerald-50/90" : "text-slate-600"}`}>
-                  {festive
-                    ? "Cranberry velvet, candy-cane stripes, and snowy sparkle, each one tied after you order."
-                    : "Glitter, plaid, and classic grosgrain, each one tied after you order."}{" "}
-                  Mix any {BUNDLE.size} for ${BUNDLE.price}, and shipping's free over ${FREE_SHIPPING_THRESHOLD}.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-4">
-                  {festive ? (
-                    <Link
-                      to="/collections/christmas"
-                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 px-6 py-3.5 text-sm font-semibold text-emerald-950 shadow-lg shadow-amber-500/20 transition hover:brightness-105 holiday-shimmer"
-                    >
-                      Shop Christmas bows
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={scrollToShop}
-                      className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600"
-                    >
-                      Shop the bows
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory("bestseller");
-                      scrollToShop();
-                    }}
-                    className={`inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${
-                      festive
-                        ? "border border-white/30 bg-white/10 text-white hover:bg-white/20"
-                        : "border border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-slate-950"
-                    }`}
-                  >
-                    {festive ? "Find a stocking stuffer" : "See favorites"}
-                  </button>
-                </div>
+        <div className="relative z-[3] mx-auto max-w-4xl px-4 pb-40 pt-16 text-center sm:pb-64 sm:pt-20">
+          <FadeIn>
+            {festive && holiday.open ? (
+              <Link
+                to="/collections/christmas"
+                className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-gold-200 ring-1 ring-white/25 backdrop-blur transition hover:bg-white/25"
+              >
+                🎄 Order by {holiday.label} for Christmas
+                {holiday.daysLeft <= 14 ? ` · ${holiday.daysLeft} day${holiday.daysLeft === 1 ? "" : "s"} left` : ""}
+              </Link>
+            ) : (
+              <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-gold-200 ring-1 ring-white/25">
+                👑 Tied by hand, one order at a time
+              </p>
+            )}
+            <h1 className="mt-6 font-display text-5xl font-semibold leading-[1.05] sm:text-7xl">
+              Bows fit for a <span className="sparkle-text font-script text-6xl sm:text-8xl">princess</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-royal-100">
+              {festive ? "Glittery Christmas bows, birthday bows, and cheer bows. " : "Glittery bows for birthdays, cheer, and every day. "}
+              Each one is tied after you order it. Pick any {BUNDLE.size} for ${BUNDLE.price}!
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                onClick={scrollToShop}
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-gold-300 via-gold-200 to-gold-300 px-7 py-3.5 text-base font-extrabold text-royal-900 shadow-lg shadow-gold-400/30 transition hover:scale-105"
+              >
+                Shop the bows <ArrowRight className="h-5 w-5" />
+              </button>
+              {festive && (
+                <Link
+                  to="/collections/christmas"
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-7 py-3.5 text-base font-bold text-white ring-2 ring-white/40 transition hover:bg-white/20"
+                >
+                  🎄 Christmas bows
+                </Link>
+              )}
+            </div>
+          </FadeIn>
+        </div>
 
-                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                  {(festive
-                    ? [
-                        { value: "Stocking-ready", label: "Clipped to a card and ready to wrap" },
-                        { value: "Tied to order", label: "Made for you, never pulled from a bin" },
-                        { value: `${BUNDLE.size} for $${BUNDLE.price}`, label: "Mix colors and styles any way you like" },
-                      ]
-                    : [
-                        { value: "Gift-ready", label: "Clipped to a card and ready to wrap" },
-                        { value: "Tied to order", label: "Made for you, never pulled from a bin" },
-                        { value: `${BUNDLE.size} for $${BUNDLE.price}`, label: "Mix colors and styles any way you like" },
-                      ]
-                  ).map((item) => (
-                    <div
-                      key={item.value}
-                      className={`rounded-[28px] p-5 ${festive ? "border border-white/15 bg-white/10 backdrop-blur" : "border border-slate-200 bg-[#fcfaf7]"}`}
-                    >
-                      <p className={`text-lg font-semibold ${festive ? "text-white" : "text-slate-950"}`}>{item.value}</p>
-                      <p className={`mt-2 text-sm leading-6 ${festive ? "text-emerald-50/80" : "text-slate-500"}`}>{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeIn>
+        <Castle className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-36 w-full sm:h-52" />
+      </section>
 
-            <FadeIn delay={120}>
-              <div className={`relative ${festive ? "float-gentle" : ""}`}>
-                <div className={`rounded-[40px] p-6 shadow-sm ${festive ? "border border-white/15 bg-gradient-to-br from-rose-200/30 via-white/10 to-amber-200/30" : "border border-slate-200 bg-gradient-to-br from-rose-100 via-white to-amber-100"}`}>
-                  <div className="rounded-[34px] bg-white p-6 shadow-sm">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className={`rounded-[28px] p-6 text-white ${festive ? "bg-gradient-to-br from-rose-700 to-rose-900" : "bg-slate-950"}`}>
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">
-                          {festive ? "Made for the photo" : "Picture ready"}
-                        </p>
-                        <h2 className="brand-serif mt-3 text-3xl">
-                          {festive ? "Front-row bows for the Christmas card." : "The finishing touch for every outfit."}
-                        </h2>
-                        <p className="mt-4 text-sm leading-7 text-rose-100">
-                          {festive
-                            ? "Matching sisters, school parties, Santa visits, and Christmas morning."
-                            : "Birthdays, picture day, recitals, and ordinary Tuesdays."}
-                        </p>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="rounded-[28px] bg-[#fcfaf7] p-5">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                            Why parents come back
-                          </p>
-                          <div className="mt-4 space-y-3 text-sm text-slate-600">
-                            <p>Clips that stay put through recess</p>
-                            <p>Soft ribbon that won't scratch</p>
-                            <p>Packed like a present</p>
-                          </div>
-                        </div>
-                        <Link to="/team-orders" className="block rounded-[28px] border border-emerald-100 bg-emerald-50 p-5 transition hover:border-emerald-300">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
-                            {festive ? "Whole team in red and green?" : "Ordering for a group?"}
-                          </p>
-                          <p className="mt-3 text-sm leading-7 text-slate-600">
-                            Cheer squads, dance classes, and choirs get matching sets.
-                            Ask about team pricing →
-                          </p>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
+      {/* PROMISES: one short strip */}
+      <section className="relative z-[3] -mt-8 px-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 rounded-[28px] bg-white p-4 shadow-[0_20px_50px_-25px_rgba(91,33,182,0.5)] ring-1 ring-royal-100 sm:grid-cols-4 sm:p-5">
+          {[
+            { icon: Scissors, text: "Tied by hand" },
+            { icon: Gift, text: `${BUNDLE.size} bows for $${BUNDLE.price}` },
+            { icon: Truck, text: `Free shipping over $${FREE_SHIPPING_THRESHOLD}` },
+            { icon: Heart, text: "Wrapped like a gift" },
+          ].map(({ icon: Icon, text }) => (
+            <div key={text} className="flex items-center gap-2.5 rounded-2xl bg-royal-50 px-3 py-2.5 text-sm font-bold text-royal-800">
+              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-candy-400 to-royal-500 text-white">
+                <Icon className="h-4 w-4" />
+              </span>
+              {text}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* THE SHOP: one row of occasion chips + every bow */}
+      <section id="shop-section" className="mx-auto max-w-7xl scroll-mt-32 px-4 py-16 sm:px-6 lg:px-8">
+        <FadeIn>
+          <SectionTitle eyebrow="The bow shop" title="Pick your sparkle">
+            Tap a chip to find the perfect bow.
+          </SectionTitle>
+          <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+            {filters.map((filter) => (
+              <button
+                type="button"
+                key={filter.id}
+                onClick={() => setSelected(filter.id)}
+                className={`rounded-full px-5 py-2.5 text-[15px] font-bold transition ${
+                  selected === filter.id
+                    ? "bg-gradient-to-r from-candy-500 to-royal-600 text-white shadow-lg shadow-candy-500/30"
+                    : "bg-white text-royal-800 ring-2 ring-royal-100 hover:ring-candy-300"
+                }`}
+              >
+                {filter.emoji} {filter.label}
+              </button>
+            ))}
           </div>
-        </section>
+        </FadeIn>
 
-        {/* TRUST BAR */}
-        <section className={`border-b text-white ${festive ? "border-rose-950 bg-[#5c1426]" : "border-slate-200 bg-slate-950"}`}>
-          <div className="mx-auto grid max-w-7xl gap-4 px-4 py-5 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-            {[
-              { icon: ShieldCheck, text: "Tied by hand in small batches" },
-              { icon: Truck, text: "Ships in about a week" },
-              { icon: PackageCheck, text: "Wrapped and ready to give" },
-              { icon: CheckCircle2, text: "Real replies from a real family" },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3">
-                <Icon className={`h-4 w-4 ${festive ? "text-amber-300" : "text-rose-300"}`} />
-                <span className="text-slate-100">{text}</span>
+        {isLoading ? (
+          <div className={`mt-10 ${PRODUCT_GRID}`}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="aspect-[4/5.4] w-full max-w-[320px] animate-pulse rounded-[30px] bg-white/80" />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="mx-auto mt-10 max-w-md rounded-[30px] border-2 border-dashed border-royal-200 bg-white/80 p-10 text-center">
+            <p className="text-4xl">🎀</p>
+            <p className="mt-3 font-display text-xl text-royal-900">New bows are being tied right now!</p>
+            <p className="mt-2 text-sm text-royal-600">Check back soon, or join the list below to hear first.</p>
+          </div>
+        ) : (
+          <div className={`mt-10 ${PRODUCT_GRID}`}>
+            {products.map((product, index) => (
+              <div key={product._id || product.id} className="flex w-full justify-center">
+                <ProductCard product={product} onAddToCart={addToCart} />
               </div>
             ))}
           </div>
-        </section>
+        )}
 
-        {/* FEATURED PRODUCTS */}
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <FadeIn className="mt-12">
+          <Link
+            to="/team-orders"
+            className="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 rounded-[28px] bg-gradient-to-r from-royal-700 to-candy-600 p-6 text-white shadow-lg sm:flex-row"
+          >
+            <span className="text-center sm:text-left">
+              <span className="block font-display text-2xl font-semibold">📣 Bows for the whole squad?</span>
+              <span className="block text-sm text-royal-100">Cheer, dance, and class sets in your colors, with team pricing.</span>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-royal-800">
+              Team orders <ArrowRight className="h-4 w-4" />
+            </span>
+          </Link>
+        </FadeIn>
+      </section>
+
+      {/* MEET THE MAKER (filled in from admin Site Settings) */}
+      {settings.makerStory ? (
+        <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <FadeIn>
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
-                  Featured collection
-                </p>
-                <h2 className="brand-serif mt-4 text-4xl text-slate-950">
-                  The bows customers reach for first.
-                </h2>
+            <div className="relative grid items-center gap-8 overflow-hidden rounded-[36px] bg-white p-8 shadow-[0_20px_50px_-25px_rgba(91,33,182,0.45)] ring-1 ring-royal-100 md:grid-cols-[220px_1fr]">
+              <SparkleIcon size={22} className="twinkle-star right-8 top-6 text-gold-400" />
+              {settings.makerPhoto ? (
+                <img
+                  src={settings.makerPhoto}
+                  alt={settings.makerName ? `${settings.makerName}, the bow maker` : "The bow maker"}
+                  className="mx-auto aspect-square w-full max-w-[220px] rounded-full object-cover ring-8 ring-candy-100"
+                />
+              ) : null}
+              <div className={settings.makerPhoto ? "" : "md:col-span-2"}>
+                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-candy-600">👑 Meet the maker</p>
+                {settings.makerName ? <h2 className="mt-2 font-script text-5xl font-bold text-royal-800">{settings.makerName}</h2> : null}
+                <p className="mt-4 whitespace-pre-line text-base leading-8 text-royal-800/80">{settings.makerStory}</p>
+                <div className="mt-5 flex flex-wrap gap-2 text-sm font-bold">
+                  {[
+                    ["Instagram", settings.instagramUrl],
+                    ["TikTok", settings.tiktokUrl],
+                    ["Facebook", settings.facebookUrl],
+                  ]
+                    .filter(([, url]) => url)
+                    .map(([label, url]) => (
+                      <a key={label} href={url} target="_blank" rel="noreferrer" className="rounded-full bg-royal-50 px-4 py-2 text-royal-800 ring-1 ring-royal-200 hover:bg-candy-50 hover:ring-candy-300">
+                        {label}
+                      </a>
+                    ))}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCategory("bestseller");
-                  scrollToShop();
-                }}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-rose-600"
-              >
-                Browse best sellers
-                <ArrowRight className="h-4 w-4" />
-              </button>
             </div>
           </FadeIn>
-
-          {isLoading ? (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="aspect-[4/5.7] animate-pulse rounded-[28px] bg-white"
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {displayFeatured.map((product, index) => (
-                <FadeIn key={product._id || product.id} delay={index * 60}>
-                  <ProductCard product={product} onAddToCart={addToCart} />
-                </FadeIn>
-              ))}
-            </div>
-          )}
         </section>
+      ) : null}
 
-        {/* SHOP BY OCCASION */}
-        <section className="border-y border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8">
-            {OCCASION_CARDS.map((item, index) => (
-              <FadeIn key={item.slug} delay={index * 90}>
-                <Link
-                  to={`/collections/${item.slug}`}
-                  className={`block w-full rounded-[34px] border border-slate-200 bg-gradient-to-br ${item.palette} p-8 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg`}
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                    Shop by occasion
-                  </p>
-                  <h3 className="brand-serif mt-6 text-3xl text-slate-950">
-                    {item.label}
-                  </h3>
-                  <p className="mt-4 text-sm leading-7 text-slate-600">
-                    {item.description}
-                  </p>
-                  <div className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
-                    Shop now
-                    <ArrowRight className="h-4 w-4" />
+      {/* REVIEWS (only once there are some) */}
+      {featuredReviews.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+          <FadeIn>
+            <SectionTitle eyebrow="Happy customers" title="Sparkly reviews" />
+          </FadeIn>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {featuredReviews.slice(0, 3).map((review, index) => (
+              <FadeIn key={review._id} delay={index * 90}>
+                <article className="h-full rounded-[30px] bg-white p-7 shadow-[0_18px_40px_-24px_rgba(91,33,182,0.45)] ring-1 ring-royal-100">
+                  <div className="flex gap-0.5 text-lg text-gold-400">
+                    {Array.from({ length: review.rating }).map((_, i) => (
+                      <span key={i}>★</span>
+                    ))}
                   </div>
-                </Link>
+                  <p className="mt-4 text-[15px] leading-7 text-royal-800/85">“{review.text}”</p>
+                  <p className="mt-5 font-display font-semibold text-candy-600">{review.userName}</p>
+                </article>
               </FadeIn>
             ))}
           </div>
-          <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-            <Link
-              to="/team-orders"
-              className="flex flex-col items-start justify-between gap-3 rounded-[28px] border border-slate-200 bg-slate-950 p-6 text-white sm:flex-row sm:items-center"
-            >
-              <span>
-                <span className="block text-lg font-semibold">Ordering for a team, class, or studio?</span>
-                <span className="block text-sm text-slate-300">10+ bows in your colors, with team pricing. Tell us what you need.</span>
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950">
-                Request team pricing <ArrowRight className="h-4 w-4" />
-              </span>
-            </Link>
-          </div>
         </section>
+      )}
 
-        {/* MEET THE MAKER (filled in from admin Site Settings) */}
-        {settings.makerStory ? (
-          <section className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-8 rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm md:grid-cols-[220px_1fr]">
-              {settings.makerPhoto ? (
-                <img src={settings.makerPhoto} alt={settings.makerName ? `${settings.makerName}, the maker` : "The maker"} className="aspect-square w-full max-w-[220px] rounded-[28px] object-cover" />
-              ) : null}
-              <div className={settings.makerPhoto ? "" : "md:col-span-2"}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">Meet the maker</p>
-                {settings.makerName ? <h2 className="brand-serif mt-3 text-3xl text-slate-950">{settings.makerName}</h2> : null}
-                <p className="mt-4 whitespace-pre-line text-base leading-8 text-slate-600">{settings.makerStory}</p>
-                <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
-                  {settings.instagramUrl ? <a href={settings.instagramUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">Instagram</a> : null}
-                  {settings.tiktokUrl ? <a href={settings.tiktokUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">TikTok</a> : null}
-                  {settings.facebookUrl ? <a href={settings.facebookUrl} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 px-4 py-2 hover:border-rose-300">Facebook</a> : null}
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : null}
+      {/* VIP SIGNUP */}
+      <VipSignupSection user={user} />
 
-        {/* FULL SHOP */}
-        <section
-          id="shop-section"
-          className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
-        >
-          <FadeIn>
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
-                  Full collection
-                </p>
-                <h2 className="brand-serif mt-4 text-4xl text-slate-950">
-                  Every style, every color.
-                </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
-                  Filter by occasion or scroll and pick favorites. Each one is
-                  tied after you order it.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {categories.map((category) => (
-                  <button
-                    type="button"
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
-                      selectedCategory === category.id
-                        ? "bg-slate-950 text-white"
-                        : "border border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-slate-950"
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-
-          {isLoading ? (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="aspect-[4/5.7] animate-pulse rounded-[28px] bg-white"
-                />
-              ))}
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="mt-10 rounded-[32px] border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">
-              No bows in this category yet.
-            </div>
-          ) : (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {filteredProducts.map((product, index) => (
-                <FadeIn
-                  key={product._id || product.id}
-                  delay={Math.min(index * 40, 240)}
-                >
-                  <ProductCard product={product} onAddToCart={addToCart} />
-                </FadeIn>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* VIP SIGNUP */}
-        <VipSignupSection user={user} />
-
-        {/* REVIEWS */}
-        <section className="border-y border-slate-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <FadeIn>
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
-                    Customer confidence
-                  </p>
-                  <h2 className="brand-serif mt-4 text-4xl text-slate-950">
-                    What customers are saying.
-                  </h2>
-                </div>
-                {featuredReviews.length > 0 && (
-                  <div className="rounded-full bg-amber-50 px-5 py-3 text-sm font-semibold text-slate-700">
-                    Verified customer reviews
-                  </div>
-                )}
-              </div>
-            </FadeIn>
-
-            {featuredReviews.length === 0 ? (
-              <div className="mt-10 rounded-[32px] border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">
-                Customer reviews will appear here after your first orders.
-              </div>
-            ) : (
-              <div className="mt-10 grid gap-6 lg:grid-cols-3">
-                {featuredReviews.slice(0, 3).map((review, index) => (
-                  <FadeIn key={review._id} delay={index * 90}>
-                    <article className="rounded-[30px] border border-slate-200 bg-[#fcfaf7] p-7">
-                      <div className="flex gap-1 text-amber-400">
-                        {Array.from({ length: review.rating }).map((_, i) => (
-                          <span key={i}>★</span>
-                        ))}
-                      </div>
-                      <p className="mt-5 text-sm leading-7 text-slate-600">
-                        "{review.text}"
-                      </p>
-                      <div className="mt-6 border-t border-slate-200 pt-5">
-                        <p className="font-semibold text-slate-950">
-                          {review.userName}
-                        </p>
-                      </div>
-                    </article>
-                  </FadeIn>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="mx-auto max-w-5xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <FadeIn>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
-              Ready to shop
-            </p>
-            <h2 className="brand-serif mt-5 text-5xl text-slate-950">
-              {festive ? "Ready to wrap something sparkly?" : "Ready to find her new favorite?"}
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-slate-500">
-              {festive
-                ? `Pick a few favorites by ${holiday.label}, and we'll tie them, pack them, and send them your way before Christmas.`
-                : "Pick a few favorites, and we'll tie them, pack them, and send them your way."}
-            </p>
-            <button
-              type="button"
-              onClick={scrollToShop}
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-rose-600"
-            >
-              Shop all bows
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <div className="mt-5">
-              <Link
-                to="/collections/sparkle"
-                className="text-sm font-semibold text-slate-700 transition hover:text-rose-600"
-              >
-                Explore collections
-              </Link>
-            </div>
-          </FadeIn>
-        </section>
-      </div>
+      {/* CLOSING CTA */}
+      <section className="relative overflow-hidden px-4 py-20 text-center">
+        <SparkleIcon size={26} className="twinkle-star left-[12%] top-10 text-gold-400" />
+        <SparkleIcon size={18} className="twinkle-star right-[14%] top-16 text-candy-400" style={{ animationDelay: "0.8s" }} />
+        <SparkleIcon size={14} className="twinkle-star bottom-12 left-[30%] text-royal-400" style={{ animationDelay: "1.6s" }} />
+        <FadeIn>
+          <h2 className="font-display text-4xl font-semibold text-royal-950 sm:text-5xl">
+            {festive ? "Ready to wrap something sparkly?" : "Ready for a new favorite bow?"}
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-royal-700/80">
+            {festive
+              ? `Order by ${holiday.label} and your bows arrive before Christmas, tied, packed, and ready to give.`
+              : "Pick a few favorites and we'll tie them, pack them, and send them your way."}
+          </p>
+          <button
+            type="button"
+            onClick={scrollToShop}
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-candy-500 to-royal-600 px-8 py-4 text-base font-extrabold text-white shadow-lg shadow-candy-500/30 transition hover:scale-105"
+          >
+            Shop all bows <ArrowRight className="h-5 w-5" />
+          </button>
+        </FadeIn>
+      </section>
     </div>
   );
 }

@@ -13,10 +13,14 @@
 
   body {
     margin: 0;
-    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI",
       sans-serif;
-    background: #f7f3ee;
-    color: #0f172a;
+    /* Snowy princess morning: soft pink to lavender, with tiny sparkles */
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.9) 0 1.5px, transparent 2px) 0 0 / 140px 140px,
+      radial-gradient(circle at 70% 60%, rgba(255, 204, 51, 0.55) 0 1.5px, transparent 2px) 0 0 / 190px 190px,
+      linear-gradient(180deg, #fff0f7 0%, #f6edff 45%, #fff7fb 100%) fixed;
+    color: #2e1065;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -72,4 +76,46 @@
 @media (prefers-reduced-motion: reduce) {
   .snowflake { display: none; }
   .bulb, .holiday-shimmer, .float-gentle { animation: none; }
+}
+
+
+/* ── Princess Christmas theme ─────────────────────────────────────────── */
+.font-script { font-family: "Dancing Script", cursive; }
+.brand-serif { font-family: "Fredoka", "Nunito", sans-serif; }
+.brand-sans { font-family: "Nunito", sans-serif; }
+
+/* Snow over the whole site (fixed layer; flakes are tinted so they show on light pages too) */
+.snowfall--page { position: fixed; z-index: 30; }
+.snowfall--page .snowflake { background: #ffffff; box-shadow: 0 0 6px 1px rgba(192, 132, 252, 0.75); }
+
+/* Night sky stars and twinkling sparkles */
+.twinkle-star { position: absolute; color: #fff7c2; animation: twinkle 2.6s ease-in-out infinite; pointer-events: none; }
+@keyframes twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.7) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
+.sparkle-text { background: linear-gradient(90deg, #ff5fa8, #ffcc33, #c084fc, #ff5fa8); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sparkle-text 6s linear infinite; }
+@keyframes sparkle-text { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+
+/* Santa's sleigh: crosses the sky every 22 seconds */
+.santa-flyby { position: absolute; top: 18%; left: 0; width: 260px; pointer-events: none; z-index: 2; animation: santa-fly 22s linear infinite; }
+@keyframes santa-fly {
+  0% { transform: translate(-320px, 40px) rotate(-4deg); opacity: 0; }
+  4% { opacity: 1; }
+  45% { transform: translate(55vw, -30px) rotate(-8deg); opacity: 1; }
+  60% { transform: translate(105vw, -60px) rotate(-6deg); opacity: 0; }
+  100% { transform: translate(105vw, -60px); opacity: 0; }
+}
+.santa-flyby .reindeer-legs { animation: gallop 0.5s ease-in-out infinite alternate; transform-origin: center; }
+@keyframes gallop { from { transform: translateY(0); } to { transform: translateY(3px); } }
+
+/* Little sparkle burst used on hover / tap (components/SparkleBurst) */
+.sparkle-pop { position: absolute; pointer-events: none; width: 14px; height: 14px; color: #ffcc33; animation: sparkle-pop 0.8s ease-out forwards; z-index: 60; }
+@keyframes sparkle-pop { 0% { transform: translate(-50%, -50%) scale(0.2) rotate(0deg); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(90deg); opacity: 0; } }
+
+/* Glow ring for princess cards */
+.royal-card { position: relative; }
+.royal-card::after { content: ""; position: absolute; inset: -2px; border-radius: inherit; padding: 2px; background: linear-gradient(135deg, #ff94c6, #ffe066, #c084fc); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.royal-card:hover::after { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .santa-flyby, .sparkle-pop { display: none; }
+  .twinkle-star, .sparkle-text { animation: none; }
 }

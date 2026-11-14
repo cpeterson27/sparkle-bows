@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "../components/ProductCard";
 import Seo from "../components/Seo";
+import { TwinklingStars } from "../components/ChristmasEffects";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { COLLECTIONS, getCollectionBySlug, productInCollection } from "../data/collections";
 
@@ -18,7 +19,7 @@ export default function CollectionPage({ products = [], addToCart }) {
   const collectionProducts = products.filter((product) => productInCollection(product, collection));
 
   return (
-    <div className="bg-[#f7f3ee]">
+    <div >
       <Seo
         title={collection.title}
         description={collection.description}
@@ -35,26 +36,27 @@ export default function CollectionPage({ products = [], addToCart }) {
         }}
       />
 
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
+      <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_#7e22ce_0%,_#3b0764_55%,_#1e0533_100%)] text-white">
+        <TwinklingStars count={18} />
+        <div className="relative z-[3] mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] font-extrabold text-gold-200">
             {collection.eyebrow}
           </p>
-          <h1 className="mt-4 font-serif text-5xl text-slate-950">
+          <h1 className="mt-4 font-display text-5xl font-semibold text-white sm:text-6xl">
             {collection.title}
           </h1>
-          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-royal-100">
             {collection.hero}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-2.5">
             {COLLECTIONS.map((item) => (
               <Link
                 key={item.slug}
                 to={`/collections/${item.slug}`}
                 className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
                   item.slug === collection.slug
-                    ? "bg-slate-950 text-white"
-                    : "border border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50"
+                    ? "bg-gold-300 text-royal-900 shadow-lg"
+                    : "bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20"
                 }`}
               >
                 {item.title}
@@ -66,7 +68,7 @@ export default function CollectionPage({ products = [], addToCart }) {
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         {collectionProducts.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid justify-items-center gap-6 [grid-template-columns:repeat(auto-fill,minmax(230px,1fr))]">
             {collectionProducts.map((product) => (
               <ProductCard
                 key={product._id || product.id}
@@ -76,19 +78,18 @@ export default function CollectionPage({ products = [], addToCart }) {
             ))}
           </div>
         ) : (
-          <div className="rounded-[32px] border border-dashed border-slate-300 bg-white p-12 text-center">
-            <h2 className="font-serif text-3xl text-slate-950">
-              This collection is coming together.
+          <div className="rounded-[32px] border border-dashed border-royal-300 bg-white p-12 text-center">
+            <h2 className="font-display text-3xl text-royal-950">
+              New bows are being tied right now! 🎀
             </h2>
-            <p className="mt-4 text-sm leading-7 text-slate-500">
-              Add products in this collection from the admin dashboard and they
-              will appear here automatically.
+            <p className="mt-4 text-sm leading-7 text-royal-600">
+              Check back soon, or see every bow in the shop.
             </p>
             <Link
               to="/"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-royal-950 px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
             >
-              Return to storefront
+              See all bows
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
