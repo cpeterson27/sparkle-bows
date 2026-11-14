@@ -28,6 +28,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import OrderHistory from "./components/OrderHistory";
 import OrderDetails from "./components/OrderDetails";
 import ThankYou from "./components/ThankYou";
+import DealToast, { cartDealState, dealMessage } from "./components/DealToast";
 
 import { createReview, updateReview, deleteReview } from "./api/reviews";
 import api from "./api/axios.config";
@@ -52,6 +53,8 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [dealToast, setDealToast] = useState(null);
+  const closeDealToast = useCallback(() => setDealToast(null), []);
   // Opening a new page starts at the top (product pages used to open scrolled down to where you clicked).
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -202,11 +205,14 @@ export default function App() {
   }, [location.pathname, location.search]);
 
   // ───────────────── Cart handlers
+  const cartRef = useRef(cart);
+  cartRef.current = cart;
+
   const addToCart = useCallback((product, qty = 1, personalization = "") => {
     trackAddToCart(product, qty);
     const text = product.personalizable ? String(personalization || "").trim().slice(0, 40) : "";
     const key = cartLineKey({ productId: product, personalization: text });
-    setCart((prev) => {
+    const addTo = (prev) => {
       const exists = prev.find((i) => cartLineKey(i) === key);
       if (exists) {
         return prev.map((i) =>
@@ -216,7 +222,12 @@ export default function App() {
         );
       }
       return [...prev, { productId: product, quantity: qty, personalization: text }];
-    });
+    };
+    // Cheer when a deal kicks in (3 for $25, free shipping), otherwise a little "added" note.
+    const before = cartRef.current.filter((item) => item?.productId?._id);
+    const message = dealMessage(cartDealState(before), cartDealState(addTo(before)));
+    setDealToast({ ...message, id: Date.now() });
+    setCart(addTo);
   }, []);
 
   const removeItem = useCallback((id) => {
@@ -419,6 +430,7 @@ export default function App() {
 
       {!isAdminRoute && <SiteFooter onShowContact={() => setShowContact(true)} />}
 
+      <DealToast message={dealToast} onClose={closeDealToast} onOpenCart={() => setShowCart(true)} />
       {showCart && (
         <CartSidebar
           cart={cart}
