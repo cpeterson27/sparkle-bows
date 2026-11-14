@@ -120,3 +120,8 @@
   .santa-flyby, .sparkle-pop { display: none; }
   .twinkle-star, .sparkle-text { animation: none; }
 }
+
+/* Deal pop-up: bounces in from the bottom */
+.deal-toast { animation: deal-pop 0.55s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes deal-pop { from { transform: translateY(40px) scale(0.85); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .deal-toast { animation: none; } }

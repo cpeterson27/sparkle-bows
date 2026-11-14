@@ -7,7 +7,7 @@ import { SparkleIcon } from "../components/ChristmasEffects";
 import { fetchProductById } from "../api/products";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { trackViewItem } from "../lib/analytics";
-import { BUNDLE, DEFAULT_MADE_TO_ORDER_DAYS, FREE_SHIPPING_THRESHOLD, OCCASIONS, PERSONALIZATION_FEE, styleLabel } from "../config/shop";
+import { BUNDLE, DEFAULT_MADE_TO_ORDER_DAYS, FREE_SHIPPING_THRESHOLD, OCCASIONS, PERSONALIZATION_FEE, bundleSavings, styleLabel } from "../config/shop";
 
 function formatPrice(price) {
   return `$${Number(price || 0).toFixed(2)}`;
@@ -130,6 +130,10 @@ export default function ProductPage({ products = [], onAddToCart, user, onAddRev
   const occasion = OCCASIONS.find((item) => product.occasions?.includes(item.id));
   const makeDays = product.madeToOrderDays || DEFAULT_MADE_TO_ORDER_DAYS;
   const unitPrice = Number(product.price || 0) + (product.personalizable && personalization.trim() ? PERSONALIZATION_FEE : 0);
+  // What this many of this bow costs after the 3-for deal, and whether it alone earns free shipping.
+  const savings = product.bundleEligible === false ? 0 : bundleSavings([{ productId: product, quantity }]).savings;
+  const lineTotal = Math.max(0, unitPrice * quantity - savings);
+  const freeShip = lineTotal >= FREE_SHIPPING_THRESHOLD;
 
   const handleAddToCart = () => {
     onAddToCart(product, quantity, product.personalizable ? personalization : "");
@@ -211,7 +215,7 @@ export default function ProductPage({ products = [], onAddToCart, user, onAddRev
           <div className="lg:sticky lg:top-32">
             <div className="relative overflow-hidden rounded-[40px] bg-white p-3 shadow-[0_30px_60px_-30px_rgba(91,33,182,0.55)] ring-1 ring-royal-100">
               <div className="aspect-square overflow-hidden rounded-[32px] bg-gradient-to-br from-candy-50 via-white to-royal-50">
-                <img src={images[selectedImage]?.url} alt={images[selectedImage]?.alt || product.name} className="h-full w-full object-cover" />
+                <img src={images[selectedImage]?.url} alt={images[selectedImage]?.alt || product.name} className="h-full w-full object-contain p-3" />
               </div>
               <SparkleIcon size={22} className="twinkle-star right-8 top-8 text-white drop-shadow" />
               <SparkleIcon size={14} className="twinkle-star bottom-10 left-8 text-gold-200 drop-shadow" style={{ animationDelay: "1s" }} />
@@ -229,7 +233,7 @@ export default function ProductPage({ products = [], onAddToCart, user, onAddRev
                       selectedImage === index ? "ring-4 ring-candy-400" : "ring-1 ring-royal-100 hover:ring-candy-200"
                     }`}
                   >
-                    <img src={image.url} alt={image.alt || `${product.name} ${index + 1}`} className="h-full w-full object-cover" />
+                    <img src={image.url} alt={image.alt || `${product.name} ${index + 1}`} className="h-full w-full object-contain p-1" />
                   </button>
                 ))}
               </div>
@@ -310,14 +314,22 @@ export default function ProductPage({ products = [], onAddToCart, user, onAddRev
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-candy-500 to-royal-600 px-6 py-4 text-base font-extrabold text-white shadow-lg shadow-candy-500/30 transition hover:scale-[1.02]"
                 >
                   <ShoppingBag className="h-5 w-5" />
-                  Add to cart · {formatPrice(unitPrice * quantity)}
+                  Add to cart · {formatPrice(lineTotal)}
                 </button>
               </div>
 
-              {product.bundleEligible !== false && (
-                <p className="mt-4 rounded-2xl bg-gold-200/50 px-4 py-2.5 text-center text-sm font-bold text-royal-800">
-                  🎁 Any {BUNDLE.size} bows for ${BUNDLE.price} · free shipping over ${FREE_SHIPPING_THRESHOLD}
+              {savings > 0 || freeShip ? (
+                <p className="deal-toast mt-4 rounded-2xl bg-gradient-to-r from-candy-100 to-gold-200/70 px-4 py-2.5 text-center text-sm font-extrabold text-royal-900">
+                  {savings > 0 ? `🎁 ${BUNDLE.size} for $${BUNDLE.price} applied: you save ${formatPrice(savings)}!` : ""}
+                  {savings > 0 && freeShip ? " " : ""}
+                  {freeShip ? "🚚 Free shipping!" : ""}
                 </p>
+              ) : (
+                product.bundleEligible !== false && (
+                  <p className="mt-4 rounded-2xl bg-gold-200/50 px-4 py-2.5 text-center text-sm font-bold text-royal-800">
+                    🎁 Any {BUNDLE.size} bows for ${BUNDLE.price} · free shipping over ${FREE_SHIPPING_THRESHOLD}
+                  </p>
+                )
               )}
             </div>
 

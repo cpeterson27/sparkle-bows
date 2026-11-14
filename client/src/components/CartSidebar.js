@@ -87,6 +87,7 @@ export default function CartSidebar({
   const [, setRatesSubtotal] = useState(null);
   const [shippingPolicy, setShippingPolicy] = useState(DEFAULT_SHIPPING_POLICY);
   const [safetyWarning, setSafetyWarning] = useState(DEFAULT_SAFETY_WARNING);
+  const [guestEmail, setGuestEmail] = useState("");
   const [shippingForm, setShippingForm] = useState({
     name: user?.name || "",
     line1: "",
@@ -182,8 +183,8 @@ export default function CartSidebar({
   const validateCheckoutDetails = useCallback(() => {
     const country = (shippingForm.country || "US").trim().toUpperCase();
 
-    if (!user) {
-      return "Please sign in before checking out.";
+    if (!user && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      return "Enter your email so we can send your receipt and tracking.";
     }
 
     if (
@@ -205,12 +206,14 @@ export default function CartSidebar({
     }
 
     return "";
-  }, [shippingForm, user]);
+  }, [shippingForm, user, guestEmail]);
 
   const canQuoteShipping = useCallback(() =>
-    user &&
     validCartItems.length > 0 &&
-    !validateCheckoutDetails(), [user, validCartItems.length, validateCheckoutDetails]);
+    !validateCheckoutDetails(), [validCartItems.length, validateCheckoutDetails]);
+
+  const customerName = user?.name || shippingForm.name.trim();
+  const customerEmail = user?.email || guestEmail.trim();
 
   const handleLoadShippingRates = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setError("");
@@ -226,8 +229,8 @@ export default function CartSidebar({
 
     try {
       const res = await api.post("/api/stripe/shipping-rates", {
-        customerName: user.name,
-        customerEmail: user.email,
+        customerName,
+        customerEmail,
         shippingInfo: buildShippingInfo(),
       });
       const rates = Array.isArray(res.data?.rates) ? res.data.rates : [];
@@ -256,8 +259,8 @@ export default function CartSidebar({
     buildShippingInfo,
     cartTotal,
     clearShippingRates,
-    user?.email,
-    user?.name,
+    customerEmail,
+    customerName,
     validateCheckoutDetails,
   ]);
 
@@ -303,8 +306,8 @@ export default function CartSidebar({
       });
 
       const res = await api.post("/api/stripe/create-payment-intent", {
-        customerName: user.name,
-        customerEmail: user.email,
+        customerName,
+        customerEmail,
         shippingInfo: buildShippingInfo(),
         selectedShippingRateId: selectedShippingRate.id,
         selectedShippingRateKey: selectedShippingRate.rateKey,
@@ -575,14 +578,22 @@ export default function CartSidebar({
                   ) : null}
                   {bundle.toNextBundle > 0 && bundle.eligibleCount > 0 ? (
                     <p className="rounded-xl bg-candy-50 px-3 py-2 text-xs font-medium text-candy-700">
-                      Add {bundle.toNextBundle} more bow{bundle.toNextBundle === 1 ? "" : "s"} to get {BUNDLE.size} for ${BUNDLE.price}.
+                      🎀 Add {bundle.toNextBundle} more bow{bundle.toNextBundle === 1 ? "" : "s"} to get {BUNDLE.size} for ${BUNDLE.price}!
                     </p>
                   ) : null}
-                  <p className="rounded-xl bg-royal-50 px-3 py-2 text-xs font-medium text-royal-700">
-                    {toFreeShipping > 0
-                      ? `You're ${formatCurrency(toFreeShipping)} away from free U.S. shipping.`
-                      : "You've unlocked free U.S. shipping!"}
-                  </p>
+                  <div className={`rounded-2xl px-3 py-2.5 text-xs font-bold ${toFreeShipping > 0 ? "bg-royal-50 text-royal-700" : "bg-gradient-to-r from-candy-100 to-gold-200/60 text-royal-900"}`}>
+                    <p>
+                      {toFreeShipping > 0
+                        ? `🚚 Just ${formatCurrency(toFreeShipping)} more for free shipping!`
+                        : "🎉 Yay! You unlocked free shipping!"}
+                    </p>
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-candy-400 to-royal-500 transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.round((discountedSubtotal / FREE_SHIPPING_THRESHOLD) * 100))}%` }}
+                      />
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between">
                     <span>Shipping</span>
                     <span className="text-right">
@@ -616,6 +627,21 @@ export default function CartSidebar({
                 </p>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {!user ? (
+                    <label className="block sm:col-span-2">
+                      <span className="mb-1.5 block text-xs font-bold text-royal-700">
+                        Your email <span className="font-semibold text-royal-400">(for your receipt and tracking; no account needed)</span>
+                      </span>
+                      <input
+                        type="email"
+                        value={guestEmail}
+                        onChange={(event) => setGuestEmail(event.target.value)}
+                        className="w-full rounded-2xl border-2 border-royal-100 bg-royal-50/40 px-4 py-2.5 text-sm text-royal-950 outline-none transition focus:border-candy-300 focus:bg-white focus:ring-0"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                      />
+                    </label>
+                  ) : null}
                   <label className="block sm:col-span-2">
                     <span className="mb-1.5 block text-xs font-bold text-royal-700">
                       Recipient name
@@ -859,11 +885,6 @@ export default function CartSidebar({
                       : "Add your address to continue"}
                 </button>
 
-                {!user ? (
-                  <p className="mt-3 text-xs text-royal-600">
-                    Sign in first so we can connect your order to your account.
-                  </p>
-                ) : null}
               </div>
                 <p className="mt-3 text-center text-[11px] leading-5 text-royal-400">{safetyWarning}</p>
             </div>

@@ -32,7 +32,19 @@ router.get("/public/:idOrPi", async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    res.json(order);
+    // Anyone with the link can see this, so it never includes the address, email, or phone.
+    res.json({
+      _id: order._id,
+      status: order.status,
+      createdAt: order.createdAt,
+      total: order.total,
+      items: (order.items || []).map((item) => ({
+        name: item.name || item.productId?.name,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.productId?.images?.[0]?.url,
+      })),
+    });
   } catch (err) {
     logger.error("Public order fetch failed", { error: err.message });
     res.status(500).json({ error: "Could not fetch order" });
